@@ -32,10 +32,10 @@ def ip_generator():
     batch_size = 50_000_000  # Batch size for writing to file
     ip_list = []
 
-    last_ip = get_last_generated_ip("ip_list.txt")
+    last_ip = get_last_generated_ip("results/ip_list.txt")
     start_values = list(map(int, last_ip.split(".")))
 
-    with open("ip_list.txt", "a", encoding="utf-8") as file:
+    with open("results/ip_list.txt", "a", encoding="utf-8") as file:
         with tqdm.tqdm(total=total_ips, desc="Generating IPs") as pbar:
             for i in range(start_values[0], 256):
                 for j in range(start_values[1] if i == start_values[0] else 0, 256):
@@ -60,8 +60,8 @@ def delete_private_ip():
     start_time = time.time()
     private_prefixes = ("192.168.", "172.16.", "10.", "127.")
 
-    with open("ip_list.txt", "r", encoding="utf-8") as infile, open("filtered_ip_list.txt", "w",
-                                                                    encoding="utf-8") as outfile:
+    with open("results/ip_list.txt", "r", encoding="utf-8") as infile, open("results/filtered_ip_list.txt", "w",
+                                                                            encoding="utf-8") as outfile:
         with tqdm.tqdm(total=256 * 256 * 256 * 256, desc="Filtering IPs") as pbar:
             for line in infile:
                 if not line.startswith(private_prefixes):

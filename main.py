@@ -2,6 +2,7 @@ import requests
 from dotenv import load_dotenv
 import os
 import sys
+import socket
 
 load_dotenv()
 api_key = os.getenv("API_KEY")
@@ -15,74 +16,51 @@ def check_command():
     else:
         return False
 
-# with sys check if the command have arguments I want to get the argument and verify if the parameters are correct or not
-# the correct parameters are hostname (-h or --hostname) and page (-p or --page)
-# page is optional if the user don't put it I will put it by default to 1, and it's number between 1 and 100
-# hostname is required and it’s a string
+# get the parameters from the command line
 
 
 def get_parameters():
     parameters = {}
     for index, arg in enumerate(sys.argv):
-        if arg == "-h" or arg == "--hostname":
+        if arg == "-i" or arg == "--ip":
             if index + 1 < len(sys.argv):
-                parameters["hostname"] = sys.argv[index + 1]
+                parameters["ip"] = sys.argv[index + 1]
             else:
-                print("Hostname is required")
+                print("ip is required")
                 return False
-        if arg == "-p" or arg == "--page":
-            if index + 1 < len(sys.argv):
-                if sys.argv[index + 1].isdigit():
-                    if 1 <= int(sys.argv[index + 1]) <= 100:
-                        parameters["page"] = sys.argv[index + 1]
-                    else:
-                        print("page must be a number between 1 and 100")
-                        return False
-                else:
-                    print("page must be a number between 1 and 100")
-                    return False
-            else:
-                print("page is required")
-                return False
-    if "hostname" not in parameters:
-        print("Hostname is required")
+    if "ip" not in parameters:
+        print("ip is required")
         return False
     return parameters
 
-# if there is no parameters we enter in an interactive mode where the user can enter the hostname and the page number
-# if the user don't enter the page number i will put it by default to 1
+# the interactive mode to get the ip address
 
 
 def interactive_mode():
     print("You are in interactive mode")
     parameters = {}
-    hostname = ""
-    while not hostname:
-        print("Enter the hostname")
-        hostname = input()
-    parameters["hostname"] = hostname
-    print("Enter the page number (optional)")
-    page = input()
-    if page:
-        if page.isdigit():
-            if 1 <= int(page) <= 100:
-                parameters["page"] = page
-            else:
-                print("page must be a number between 1 and 100")
-                return False
-        else:
-            print("page must be a number between 1 and 100")
-            return False
-    else:
-        parameters["page"] = "1"
+    ip = ""
+    while not ip or not ip.replace(".", "").isdigit() or len(ip.split(".")) != 4:
+        if not ip:
+            print("Enter the ip address")
+        elif not ip.replace(".", "").isdigit():
+            print("The ip address should be a number")
+        elif len(ip.split(".")) != 4:
+            print("The ip address should have 4 numbers")
+        ip = input()
+    parameters["ip"] = ip
     return parameters
+
 
 # create the request to the API and return the response
 
 
 def request_api(parameters):
-    url = f"https://api.securitytrails.com/v1/domain/{parameters['hostname']}/associated?page={parameters['page']}"
-    headers = {"APIKEY": api_key}
+    url = f"https://api.securitytrails.com/v1/domain/{parameters}/subdomains?children_only=true&include_inactive=false"
+    headers = {
+        "accept": "application/json",
+        "APIKEY": api_key
+    }
     response = requests.get(url, headers=headers)
     return response.json()
 
@@ -90,24 +68,38 @@ def request_api(parameters):
 
 
 def print_response(response):
-    with open("response.json", "w", encoding="utf-8") as file:
+    with open("results/response.json", "w", encoding="utf-8") as file:
         file.write(str(response))
-    records = response["records"]
+    records = response["subdomains"]
     count = 0
     for item in records:
-        print(f"Hostname: {item['hostname']}")
+        print(f"subdomains: {item}")
         count += 1
     print(f"Total records: {count}")
+
+
+# get the domain name from the ip address
+
+def get_domain_name(ip):
+    response = socket.gethostbyaddr(ip)
+    domain_name = response[0].split(".")
+    domain_name = domain_name[-2] + "." + domain_name[-1]
+    return domain_name
+
 
 # main function
 
 
 def main():
     if check_command():
-        response = request_api(get_parameters())
-        print_response(response)
+        domain = get_domain_name(get_parameters()["ip"])
+        print(domain)
+        response = request_api(domain)
+        print(response)
     else:
-        response = request_api(interactive_mode())
+        domain = get_domain_name(interactive_mode()["ip"])
+        print(domain)
+        response = request_api(domain)
         print_response(response)
 
 
