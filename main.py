@@ -16,6 +16,7 @@ def check_command():
     else:
         return False
 
+
 # get the parameters from the command line
 
 
@@ -32,6 +33,7 @@ def get_parameters():
         print("ip is required")
         return False
     return parameters
+
 
 # the interactive mode to get the ip address
 
@@ -56,34 +58,45 @@ def interactive_mode():
 
 
 def request_api(parameters):
-    url = f"https://api.securitytrails.com/v1/domain/{parameters}/subdomains?children_only=true&include_inactive=false"
-    headers = {
-        "accept": "application/json",
-        "APIKEY": api_key
-    }
-    response = requests.get(url, headers=headers)
-    return response.json()
+    if parameters != "nothing":
+        url = f"https://api.securitytrails.com/v1/domain/{parameters}/subdomains?children_only=true&include_inactive=false"
+        headers = {
+            "accept": "application/json",
+            "APIKEY": api_key
+        }
+        response = requests.get(url, headers=headers)
+        return response.json()
+    else:
+        return "nothing"
+
 
 # print the response
 
 
 def print_response(response):
-    with open("results/response.json", "w", encoding="utf-8") as file:
-        file.write(str(response))
-    records = response["subdomains"]
-    count = 0
-    for item in records:
-        print(f"subdomains: {item}")
-        count += 1
-    print(f"Total records: {count}")
-
+    if response != "nothing":
+        with open("results/response.json", "w", encoding="utf-8") as file:
+            file.write(str(response))
+        records = response["subdomains"]
+        count = 0
+        for item in records:
+            print(f"subdomains: {item}")
+            count += 1
+        print(f"Total records: {count}")
+    else:
+        print("no subdomains")
 
 # get the domain name from the ip address
 
+
 def get_domain_name(ip):
-    response = socket.gethostbyaddr(ip)
-    domain_name = response[0].split(".")
-    domain_name = domain_name[-2] + "." + domain_name[-1]
+    try:
+        response = socket.gethostbyaddr(ip)
+        domain_name = response[0].split(".")
+        domain_name = domain_name[-2] + "." + domain_name[-1]
+    except socket.herror:
+        print("host not found")
+        return "nothing"
     return domain_name
 
 
@@ -95,7 +108,7 @@ def main():
         domain = get_domain_name(get_parameters()["ip"])
         print(domain)
         response = request_api(domain)
-        print(response)
+        print_response(response)
     else:
         domain = get_domain_name(interactive_mode()["ip"])
         print(domain)
