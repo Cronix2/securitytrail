@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 import os
 import sys
 import socket
+import ip_generator
+import subdomain_discover
 
 load_dotenv()
 api_key = os.getenv("API_KEY")
@@ -42,13 +44,18 @@ def interactive_mode():
     print("You are in interactive mode")
     parameters = {}
     ip = ""
-    while not ip or not ip.replace(".", "").isdigit() or len(ip.split(".")) != 4:
+    while not ip or not ip.replace(".", "").isdigit() or len(ip.split(".")) != 4 or ip == "%":
         if not ip:
             print("Enter the ip address")
-        elif not ip.replace(".", "").isdigit():
+        elif not ip.replace(".", "").isdigit() and ip != "%":
             print("The ip address should be a number")
-        elif len(ip.split(".")) != 4:
+        elif len(ip.split(".")) != 4 and ip != "%":
             print("The ip address should have 4 numbers")
+        elif ip == "%":
+            print("you're in an automatic mode")
+            parameters["ip"] = ip_generator.generate_1_ip()
+            print(f"ip: {parameters['ip']}")
+            return parameters
         ip = input()
     parameters["ip"] = ip
     return parameters
@@ -74,7 +81,7 @@ def request_api(parameters):
 
 
 def print_response(response):
-    if response != "nothing":
+    if response != "nothing" and "subdomains" in response:
         with open("results/response.json", "w", encoding="utf-8") as file:
             file.write(str(response))
         records = response["subdomains"]
@@ -93,7 +100,10 @@ def get_domain_name(ip):
     try:
         response = socket.gethostbyaddr(ip)
         domain_name = response[0].split(".")
-        domain_name = domain_name[-2] + "." + domain_name[-1]
+        if len(domain_name) > 2:
+            domain_name = domain_name[-2] + "." + domain_name[-1]
+        else:
+            domain_name = response[0]
     except socket.herror:
         print("host not found")
         return "nothing"
@@ -112,8 +122,9 @@ def main():
     else:
         domain = get_domain_name(interactive_mode()["ip"])
         print(domain)
-        response = request_api(domain)
-        print_response(response)
+        if domain != "nothing":
+            subdomain_discover.subdomain_brutforce_dictionnary(domain)
+            print("subdomains found")
 
 
 if __name__ == "__main__":

@@ -71,15 +71,43 @@ def delete_private_ip():
     print(f"Private IP filtering completed in {time.time() - start_time:.2f} seconds.")
 
 
+def generate_1_ip():
+    # check if results/ip_1.txt already exist
+    if os.path.exists("results/ip_1.txt"):
+        with open("results/ip_1.txt", "r", encoding="utf-8") as file_read:
+            line = file_read.readline().strip()
+    else:
+        with open("results/ip_1.txt", "w", encoding="utf-8") as file_write:
+            file_write.write("0.0.0.0")
+            line = "0.0.0.0"
+    line = str(line).split(".")
+    line[3] = str(int(line[3]) + 1)
+    if int(line[3])+1 >= 256:
+        line[3] = "0"
+        line[2] = str(int(line[2]) + 1)
+        if int(line[2]) >= 256:
+            line[2] = "0"
+            line[1] = str(int(line[1]) + 1)
+            if int(line[1]) >= 256:
+                line[1] = "0"
+                line[0] = str(int(line[0]) + 1)
+                if int(line[0]) >= 256:
+                    line[0] = "0"
+                    line[1] = "0"
+                    line[2] = "0"
+                    line[3] = "0"
+                    print(line)
+    with open("results/ip_1.txt", "w", encoding="utf-8") as file_write:
+        file_write.write(".".join(line))
+    return ".".join(line)
+
+
 # Main function to generate and filter the IP list
 def generate_ip_list():
     print("Starting IP generation...")
     start_time = time.time()
-    #ip_generator()
+    # ip_generator()
     print(f"IP generation completed in {time.time() - start_time:.2f} seconds.")
 
     delete_private_ip()
     print("Process completed successfully.")
-
-
-generate_ip_list()
