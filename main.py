@@ -2,14 +2,12 @@ import requests
 from dotenv import load_dotenv
 import os
 import sys
+import mariadb
 import socket
 import ip_generator
 import subdomain_discover
 
-load_dotenv()
-api_key = os.getenv("API_KEY")
-
-
+global api_key
 # I want to check if the command which tape have parameters or not
 
 def check_command():
@@ -71,8 +69,23 @@ def request_api(parameters):
             "accept": "application/json",
             "APIKEY": api_key
         }
-        response = requests.get(url, headers=headers)
-        return response.json()
+        try:
+            response = requests.get(url, headers=headers)
+        except requests.exceptions.ConnectionError:
+            print("Connection error")
+            return "nothing"
+        except requests.exceptions.Timeout:
+            print("Timeout error")
+            return "nothing"
+        except requests.exceptions.RequestException:
+            print("Request error")
+            return "nothing"
+        print(api_key)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print("error")
+            return "nothing"
     else:
         return "nothing"
 
@@ -114,6 +127,9 @@ def get_domain_name(ip):
 
 
 def main():
+    global api_key
+    load_dotenv()
+    api_key = os.getenv("API_KEY")
     if check_command():
         domain = get_domain_name(get_parameters()["ip"])
         print(domain)
@@ -122,9 +138,11 @@ def main():
     else:
         domain = get_domain_name(interactive_mode()["ip"])
         print(domain)
-        if domain != "nothing":
-            subdomain_discover.subdomain_brutforce_dictionnary(domain)
-            print("subdomains found")
+        response = request_api(domain)
+        print_response(response)
+        # if domain != "nothing":
+        #     subdomain_discover.subdomain_brutforce_dictionnary(domain)
+        #     print("subdomains found")
 
 
 if __name__ == "__main__":

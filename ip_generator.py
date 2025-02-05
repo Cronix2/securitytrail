@@ -73,6 +73,8 @@ def delete_private_ip():
 
 def generate_1_ip():
     # check if results/ip_1.txt already exist
+    if not os.path.exists("results"):
+        os.makedirs("results")
     if os.path.exists("results/ip_1.txt"):
         with open("results/ip_1.txt", "r", encoding="utf-8") as file_read:
             line = file_read.readline().strip()
@@ -81,7 +83,7 @@ def generate_1_ip():
             file_write.write("0.0.0.0")
             line = "0.0.0.0"
     line = str(line).split(".")
-    line[3] = str(int(line[3]) + 1)
+    # ! line[3] = str(int(line[3]) + 1)
     if int(line[3])+1 >= 256:
         line[3] = "0"
         line[2] = str(int(line[2]) + 1)
