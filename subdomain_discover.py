@@ -12,7 +12,7 @@ def subdomain_brutforce_dictionnary(domain):
             try:
                 response = requests.get(url_subdomain)
                 if response.status_code == 200:
-                    print(f"subdomain found: {subdomains[i].strip()}.{domain}")
+                    # print(f"subdomain found: {subdomains[i].strip()}.{domain}")
                     with open("results/subdomains.txt", "a", encoding="utf-8") as file:
                         file.write(f"{subdomains[i].strip()}.{domain}\n")
             except requests.exceptions.ConnectionError:
