@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  DB-subdomains:
+    image: mariadb:latest
+    container_name: DB-subdomains
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: subdomains
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --init-file /docker-entrypoint-initdb.d/init.sql
+    networks:
+      - my_network
+
+  supervision-db:
+    image: phpmyadmin/phpmyadmin
+    container_name: supervision-db
+    restart: always
+    environment:
+      PMA_HOST: DB-subdomains
+      MYSQL_ROOT_PASSWORD: admin
+      PMA_USER: admin
+      PMA_PASSWORD: admin
+    ports:
+      - "8080:80"
+    networks:
+      - my_network
+
+volumes:
+  mariadb_data:
+
+networks:
+  my_network:
+    driver: bridge
