@@ -16,4 +16,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Commande par défaut
-CMD ["python", "main.py"]
+CMD ["python", "main.py", "-a"]

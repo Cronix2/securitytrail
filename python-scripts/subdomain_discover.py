@@ -4,7 +4,7 @@ import tqdm
 
 # Function which take the domain and return the subdomains
 def subdomain_brutforce_dictionnary(domain):
-    with open("Subdomains/subdomain_list.txt", "r", encoding="utf-8") as file:
+    with open("../Subdomains/subdomain_list.txt", "r", encoding="utf-8") as file:
         subdomains = file.readlines()
     with tqdm.tqdm(total=len(subdomains), desc="Bruteforcing subdomains") as pbar:
         for i in range(len(subdomains)):

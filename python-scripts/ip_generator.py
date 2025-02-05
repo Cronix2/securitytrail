@@ -35,7 +35,7 @@ def ip_generator():
     last_ip = get_last_generated_ip("results/ip_list.txt")
     start_values = list(map(int, last_ip.split(".")))
 
-    with open("results/ip_list.txt", "a", encoding="utf-8") as file:
+    with open("../results/ip_list.txt", "a", encoding="utf-8") as file:
         with tqdm.tqdm(total=total_ips, desc="Generating IPs") as pbar:
             for i in range(start_values[0], 256):
                 for j in range(start_values[1] if i == start_values[0] else 0, 256):
@@ -60,7 +60,7 @@ def delete_private_ip():
     start_time = time.time()
     private_prefixes = ("192.168.", "172.16.", "10.", "127.")
 
-    with open("results/ip_list.txt", "r", encoding="utf-8") as infile, open("results/filtered_ip_list.txt", "w",
+    with open("../results/ip_list.txt", "r", encoding="utf-8") as infile, open("results/filtered_ip_list.txt", "w",
                                                                             encoding="utf-8") as outfile:
         with tqdm.tqdm(total=256 * 256 * 256 * 256, desc="Filtering IPs") as pbar:
             for line in infile:
@@ -73,17 +73,17 @@ def delete_private_ip():
 
 def generate_1_ip():
     # check if results/ip_1.txt already exist
-    if not os.path.exists("results"):
-        os.makedirs("results")
-    if os.path.exists("results/ip_1.txt"):
-        with open("results/ip_1.txt", "r", encoding="utf-8") as file_read:
+    if not os.path.exists("../results"):
+        os.makedirs("../results")
+    if os.path.exists("../results/ip_1.txt"):
+        with open("../results/ip_1.txt", "r", encoding="utf-8") as file_read:
             line = file_read.readline().strip()
     else:
-        with open("results/ip_1.txt", "w", encoding="utf-8") as file_write:
+        with open("../results/ip_1.txt", "w", encoding="utf-8") as file_write:
             file_write.write("0.0.0.0")
             line = "0.0.0.0"
     line = str(line).split(".")
-    # ! line[3] = str(int(line[3]) + 1)
+    line[3] = str(int(line[3]) + 1)
     if int(line[3])+1 >= 256:
         line[3] = "0"
         line[2] = str(int(line[2]) + 1)
@@ -99,7 +99,7 @@ def generate_1_ip():
                     line[2] = "0"
                     line[3] = "0"
                     print(line)
-    with open("results/ip_1.txt", "w", encoding="utf-8") as file_write:
+    with open("../results/ip_1.txt", "w", encoding="utf-8") as file_write:
         file_write.write(".".join(line))
     return ".".join(line)
 
