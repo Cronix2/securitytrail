@@ -1,4 +1,4 @@
-version: '4.38'
+#version: '4.38.0'
 
 services:
   DB-subdomains:
@@ -41,6 +41,8 @@ services:
       - DB-subdomains
     volumes:
       - ./python-scripts:/app
+    ports:
+      - "8081:8081"
     networks:
       - my_network
 

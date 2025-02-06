@@ -1,10 +1,12 @@
 import requests
 from dotenv import load_dotenv
+import time
 import os
 import sys
 import mariadb
 import socket
 import ip_generator
+import supervision_site as site
 import subdomain_discover
 
 global api_key
@@ -20,18 +22,27 @@ def check_command():
 # get the parameters from the command line
 
 def connect_to_db(db_user, db_password, db_host):
-    try:
-        conn = mariadb.connect(
-            user=db_user,
-            password=db_password,
-            host=db_host,
-            port=3306,
-            database="subdomains"
-        )
-    except mariadb.Error as e:
-        print(f"Error connecting to MariaDB Platform: {e}")
-        sys.exit(1)
-    return conn
+    print("Tentative de connexion à la base de données...")
+    for i in range(10):
+        try:
+            conn = mariadb.connect(
+                user=db_user,
+                password=db_password,
+                host=db_host,
+                port=3306,
+                database="subdomains"
+            )
+            print("Connected to MariaDB Platform!")
+            return conn
+        except mariadb.Error as e:
+            print(f"User: {db_user}\nPassword: {db_password}\nHost: {db_host}")
+            print(f"Error connecting to MariaDB Platform: {e}")
+            print(f"Erreur de connexion : {e}")
+            print("Nouvelle tentative dans 5 secondes...")
+            time.sleep(5)  # Attendre 5 secondes avant de réessayer
+
+    print("Impossible de se connecter à la base de données")
+    sys.exit(1)
 
 def get_parameters():
     parameters = {}
@@ -163,14 +174,20 @@ def inject_informations_in_db(cur, response, ip):
 
 
 def main():
+    print("1")
     global api_key
     load_dotenv()
+    # site.start()
+    print("2")
     api_key = os.getenv("API_KEY")
     db_user = os.getenv("DB_USER")
     db_password = os.getenv("DB_PASSWORD")
     db_host = os.getenv("DB_HOST")
+    print("3", flush=True)
     con = connect_to_db(db_user, db_password, db_host)
+    print("4", flush=True)
     cur = con.cursor()
+    print("5", flush=True)
     if check_command():
         while True:
             ip = get_parameters()["ip"]
