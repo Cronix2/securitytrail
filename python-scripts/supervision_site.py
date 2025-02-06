@@ -57,3 +57,7 @@ def run_script():
 def start():
     threading.Thread(target=run_script, daemon=True).start()
     socketio.run(app, debug=True, host='0.0.0.0', port=8081, allow_unsafe_werkzeug=True)
+
+
+if __name__ == '__main__':
+    start()

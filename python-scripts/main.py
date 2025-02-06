@@ -6,8 +6,8 @@ import sys
 import mariadb
 import socket
 import ip_generator
-import supervision_site as site
-import subdomain_discover
+# import supervision_site as site
+# import subdomain_discover
 
 global api_key
 # I want to check if the command which tape have parameters or not
@@ -167,30 +167,48 @@ def inject_informations_in_db(cur, response, ip):
                     cur.execute("UPDATE `subdomains-link-to-IP` SET subdomains = ? WHERE ip_address = ?", (subdomains, ip_address))
             else:
                 cur.execute("INSERT INTO `subdomains-link-to-IP` (ip_address, subdomains) VALUES (?, ?)", (ip_address, [item]))
-            
+    else:
+        if cur.execute("SELECT * FROM `subdomains-link-to-IP` WHERE ip_address = ?", (ip,)):
+            if cur.execute("SELECT subdomains FROM `subdomains-link-to-IP` WHERE ip_address = ?", (ip,)):
+                records = cur.fetchone()[0]
+                cur.execute("UPDATE `subdomains-link-to-IP` SET subdomains = ? WHERE ip_address = ?", (records, ip))
+        else:
+            records = "none"
+            try:
+                insert = ("INSERT INTO `subdomains-link-to-IP` (ip_address, subdomains) VALUES ('"+ip+"', '"+records+"')")
+                print(insert, flush=True)
+                cur.execute(insert)
+                print("send to the database nor", flush=True)  
+            except mariadb.Error as e:
+                print(f"Error mariadb: {e}", flush=True)
+            except Exception as e:
+                print(f"Error: {e}", flush=True)    
+    result = cur.execute("SELECT * FROM `subdomains-link-to-IP`")
+    print(result, flush=True)
 
 
 # main function
 
 
 def main():
-    print("1")
-    global api_key
-    load_dotenv()
-    # site.start()
-    print("2")
-    api_key = os.getenv("API_KEY")
-    db_user = os.getenv("DB_USER")
-    db_password = os.getenv("DB_PASSWORD")
-    db_host = os.getenv("DB_HOST")
-    print("3", flush=True)
-    con = connect_to_db(db_user, db_password, db_host)
-    print("4", flush=True)
-    cur = con.cursor()
-    print("5", flush=True)
+    try:
+        print("1", flush=True)
+        global api_key
+        load_dotenv()
+        # site.start()
+        api_key = os.getenv("API_KEY")
+        db_user = os.getenv("DB_USER")
+        db_password = os.getenv("DB_PASSWORD")
+        db_host = os.getenv("DB_HOST")
+        con = connect_to_db(db_user, db_password, db_host)
+        cur = con.cursor()
+        print("2", flush=True)
+    except Exception as e:
+        print(f"Error: {e}")
     if check_command():
         while True:
             ip = get_parameters()["ip"]
+            print(ip, flush=True)
             if not cur.execute("SELECT * FROM `subdomains-link-to-IP` WHERE ip_address = ?", (ip,)):
                 domain = get_domain_name(ip)
                 response = request_api(domain)
