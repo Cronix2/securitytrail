@@ -6,7 +6,7 @@ import sys
 import mariadb
 import socket
 import ip_generator
-# import supervision_site as site
+import supervision_site
 # import subdomain_discover
 
 global api_key
@@ -150,7 +150,7 @@ def get_domain_name(ip):
 # inject the informations in the database
 
 
-def inject_informations_in_db(cur, response, ip):
+def inject_informations_in_db(con, cur, response, ip):
     if response != "nothing":
         records = response["subdomains"]
         for item in records:
@@ -173,18 +173,17 @@ def inject_informations_in_db(cur, response, ip):
                 records = cur.fetchone()[0]
                 cur.execute("UPDATE `subdomains-link-to-IP` SET subdomains = ? WHERE ip_address = ?", (records, ip))
         else:
-            records = "none"
+            records = ""
             try:
                 insert = ("INSERT INTO `subdomains-link-to-IP` (ip_address, subdomains) VALUES ('"+ip+"', '"+records+"')")
                 print(insert, flush=True)
                 cur.execute(insert)
-                print("send to the database nor", flush=True)  
+                print("send to the database", flush=True)  
             except mariadb.Error as e:
                 print(f"Error mariadb: {e}", flush=True)
             except Exception as e:
                 print(f"Error: {e}", flush=True)    
-    result = cur.execute("SELECT * FROM `subdomains-link-to-IP`")
-    print(result, flush=True)
+    con.commit()
 
 
 # main function
@@ -195,7 +194,7 @@ def main():
         print("1", flush=True)
         global api_key
         load_dotenv()
-        # site.start()
+        supervision_site.start()
         api_key = os.getenv("API_KEY")
         db_user = os.getenv("DB_USER")
         db_password = os.getenv("DB_PASSWORD")
@@ -212,7 +211,7 @@ def main():
             if not cur.execute("SELECT * FROM `subdomains-link-to-IP` WHERE ip_address = ?", (ip,)):
                 domain = get_domain_name(ip)
                 response = request_api(domain)
-                inject_informations_in_db(cur, response, ip)
+                inject_informations_in_db(con, cur, response, ip)
     else:
         domain = get_domain_name(interactive_mode()["ip"])
         print(domain)
