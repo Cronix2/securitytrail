@@ -22,8 +22,8 @@ sys.stdout = StreamToSocketIO()  # Redirige print() vers WebSocket
 
 @app.route('/')
 def index():
-    # ! return render_template('index.html')
-    return '''
+    return render_template('index.html')
+    '''
         <!DOCTYPE html>
         <html lang="fr">
         <head>
