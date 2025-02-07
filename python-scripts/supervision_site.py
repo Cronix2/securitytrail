@@ -22,33 +22,8 @@ sys.stdout = StreamToSocketIO()  # Redirige print() vers WebSocket
 
 @app.route('/')
 def index():
-    return render_template('index.html')
-    '''
-        <!DOCTYPE html>
-        <html lang="fr">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Live Logs</title>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
-            <script>
-                document.addEventListener("DOMContentLoaded", function() {
-                    var socket = io();
-                    socket.on('log', function(msg) {
-                        var logContainer = document.getElementById("logs");
-                        var logEntry = document.createElement("p");
-                        logEntry.textContent = msg;
-                        logContainer.appendChild(logEntry);
-                    });
-                });
-            </script>
-        </head>
-        <body>
-            <h1>Logs en temps réel</h1>
-            <div id="logs" style="background: #000; color: #0f0; padding: 10px; height: 400px; overflow-y: scroll;"></div>
-        </body>
-        </html>
-    '''
+    return render_template('index2.html')
+
 def run_script():
     while True:
         print(f"Test print: {time.strftime('%H:%M:%S')}")

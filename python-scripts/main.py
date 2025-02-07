@@ -142,7 +142,7 @@ def get_domain_name(ip):
         else:
             domain_name = response[0]
     except socket.herror:
-        print("host not found")
+        # print("host not found")
         return "nothing"
     return domain_name
 
@@ -176,9 +176,9 @@ def inject_informations_in_db(con, cur, response, ip):
             records = ""
             try:
                 insert = ("INSERT INTO `subdomains-link-to-IP` (ip_address, subdomains) VALUES ('"+ip+"', '"+records+"')")
-                print(insert, flush=True)
+                #print(insert, flush=True)
                 cur.execute(insert)
-                print("send to the database", flush=True)  
+                #print("send to the database", flush=True)  
             except mariadb.Error as e:
                 print(f"Error mariadb: {e}", flush=True)
             except Exception as e:
@@ -191,7 +191,6 @@ def inject_informations_in_db(con, cur, response, ip):
 
 def main():
     try:
-        print("1", flush=True)
         global api_key
         load_dotenv()
         supervision_site.start()
@@ -201,7 +200,6 @@ def main():
         db_host = os.getenv("DB_HOST")
         con = connect_to_db(db_user, db_password, db_host)
         cur = con.cursor()
-        print("2", flush=True)
     except Exception as e:
         print(f"Error: {e}")
     if check_command():
@@ -214,7 +212,7 @@ def main():
                 inject_informations_in_db(con, cur, response, ip)
     else:
         domain = get_domain_name(interactive_mode()["ip"])
-        print(domain)
+        #print(domain)
         response = request_api(domain)
         print_response(response)
 

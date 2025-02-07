@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logs en temps réel</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1e1e1e;
+            text-align: center;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            background: #bfbfbf;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 700px;
+            margin: 50px auto;
+        }
+        h1 {
+            margin-bottom: 10px;
+            color: black;
+        }
+        .terminal {
+            background: black;
+            color: #0f0;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            text-align: left;
+            border-radius: 5px;
+        }
+        .scroll-down {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px 0;
+            cursor: pointer;
+            font-size: 24px;
+            color: black;
+        }
+        .clear-button {
+            background: #0057ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .clear-button:hover {
+            background: #0040cc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Logs en temps réel</h1>
+        <div class="terminal" id="logs"></div>
+        <div class="scroll-down" onclick="scrollToBottom()">⬇</div>
+        <button class="clear-button" onclick="clearLogs()">clear terminal</button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var socket = io();
+            socket.on('log', function(msg) {
+                var logContainer = document.getElementById("logs");
+                var logEntry = document.createElement("p");
+                var timestamp = new Date().toISOString().replace('T', '/').split('.')[0];
+                logEntry.textContent = `log@${timestamp}$ ${msg}`;
+                logContainer.appendChild(logEntry);
+                scrollToBottom();
+            });
+        });
+
+        function scrollToBottom() {
+            var logContainer = document.getElementById("logs");
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById("logs").innerHTML = "";
+        }
+    </script>
+</body>
+</html>
