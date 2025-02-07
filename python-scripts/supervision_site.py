@@ -22,7 +22,7 @@ sys.stdout = StreamToSocketIO()  # Redirige print() vers WebSocket
 
 @app.route('/')
 def index():
-    return render_template('index2.html')
+    return render_template('index3.html')
 
 def run_script():
     while True:
