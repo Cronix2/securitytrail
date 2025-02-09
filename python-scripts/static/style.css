@@ -150,7 +150,7 @@ h1 {
 
 .log-entry {
     display: flex;
-    gap: 1rem;
+    gap: 0.25rem;
     margin-bottom: 0.5rem;
 }
 

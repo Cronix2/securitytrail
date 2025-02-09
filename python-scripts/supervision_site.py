@@ -22,11 +22,11 @@ sys.stdout = StreamToSocketIO()  # Redirige print() vers WebSocket
 
 @app.route('/')
 def index():
-    return render_template('index3.html')
+    return render_template('index.html')
 
 def run_script():
     while True:
-        print(f"Test print: {time.strftime('%H:%M:%S')}")
+        print(f"Test print")
         time.sleep(60)  # Simule des logs périodiques
 
 def start():
