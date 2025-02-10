@@ -6,6 +6,7 @@
     <title>Log Statistics - Acme Inc</title>
     <link rel="stylesheet" href="../static/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Style général */
         html, body {
@@ -122,16 +123,17 @@
             </nav>
         </div>
     </header>
+
     <!-- Bandeau d'information -->
     <div class="info" id="infoBanner">
         <div class="info__icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24" height="24" fill="none">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                 <path fill="#ffffff" d="m12 1.5c-5.79844 0-10.5 4.70156-10.5 10.5 0 5.7984 4.70156 10.5 10.5 10.5 5.7984 0 10.5-4.7016 10.5-10.5 0-5.79844-4.7016-10.5-10.5-10.5zm.75 15.5625c0 .1031-.0844.1875-.1875.1875h-1.125c-.1031 0-.1875-.0844-.1875-.1875v-6.375c0-.1031.0844-.1875.1875-.1875h1.125c.1031 0 .1875.0844.1875.1875zm-.75-8.0625c-.2944-.00601-.5747-.12718-.7808-.3375-.206-.21032-.3215-.49305-.3215-.7875s.1155-.57718.3215-.7875c.2061-.21032.4864-.33149.7808-.3375.2944.00601.5747.12718.7808.3375.206.21032.3215.49305.3215.7875s-.1155.57718-.3215.7875c-.2061.21032-.4864.33149-.7808.3375z"></path>
             </svg>
         </div>
         <div class="info__title">Les statistiques sont mises à jour chaque seconde</div>
         <div class="info__close" id="closeBanner">
-            <svg height="20" viewBox="0 0 20 20" width="20" xmlns="http://www.w3.org/2000/svg">
+            <svg height="20" width="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                 <path d="m15.8333 5.34166-1.175-1.175-4.6583 4.65834-4.65833-4.65834-1.175 1.175 4.65833 4.65834-4.65833 4.6583 1.175 1.175 4.65833-4.6583 4.6583 4.6583 1.175-1.175-4.6583-4.6583z" fill="#ffffff"></path>
             </svg>
         </div>
@@ -139,6 +141,7 @@
 
     <main class="container">
         <h1>Log Statistics</h1>
+
         <section class="stats-section">
             <div class="card">
                 <div class="card-title">Logs per minute</div>
@@ -149,9 +152,53 @@
                 <div class="card-value" id="totalLogs">0</div>
             </div>
         </section>
+
+        <!-- Zone du graphique -->
+        <section class="chart-container">
+            <canvas id="logChart"></canvas>
+        </section>
     </main>
 
     <script>
+        const logsPerMinuteData = [];
+        const timeLabels = [];
+        const maxDataPoints = 10; // Affiche les 10 dernières minutes
+
+        const ctx = document.getElementById('logChart').getContext('2d');
+        const logChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: timeLabels,
+                datasets: [{
+                    label: 'Logs per minute',
+                    data: logsPerMinuteData,
+                    borderColor: '#509AF8',
+                    backgroundColor: 'rgba(80, 154, 248, 0.2)',
+                    borderWidth: 2,
+                    fill: true,
+                    pointRadius: 3,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        grid: { color: '#333' },
+                        ticks: { color: '#ffffff' }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#333' },
+                        ticks: { color: '#ffffff' }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
         function updateStats() {
             fetch('/stats-data')
                 .then(response => response.json())
@@ -162,23 +209,48 @@
                 .catch(error => console.error('Error fetching stats:', error));
         }
 
-        // Met à jour les stats toutes les 1 secondes
+        function updateChart() {
+            fetch('/stats-data')
+                .then(response => response.json())
+                .then(data => {
+                    const now = new Date();
+                    const timeString = now.getHours() + ":" + now.getMinutes();
+
+                    logsPerMinuteData.push(data.logs_per_minute);
+                    timeLabels.push(timeString);
+
+                    // Limite le nombre de points affichés
+                    if (logsPerMinuteData.length > maxDataPoints) {
+                        logsPerMinuteData.shift();
+                        timeLabels.shift();
+                    }
+
+                    logChart.update();
+                })
+                .catch(error => console.error('Error updating chart:', error));
+        }
+
+        // Met à jour les stats toutes les secondes
         setInterval(updateStats, 1000);
 
+        // Met à jour le graphe toutes les minutes
+        setInterval(updateChart, 60000);
+
         // Met à jour immédiatement après le chargement de la page
-        document.addEventListener("DOMContentLoaded", updateStats);
+        document.addEventListener("DOMContentLoaded", () => {
+            updateStats();
+            updateChart();
+        });
 
         // Gestion du bandeau d'information
         document.addEventListener("DOMContentLoaded", function () {
             const infoBanner = document.getElementById("infoBanner");
             const closeBanner = document.getElementById("closeBanner");
 
-            // Supprime le bandeau après 10 secondes
             setTimeout(() => {
                 infoBanner.classList.add("hidden");
             }, 10000);
 
-            // Permet de fermer manuellement le bandeau en cliquant sur la croix
             closeBanner.addEventListener("click", () => {
                 infoBanner.classList.add("hidden");
             });
