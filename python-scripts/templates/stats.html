@@ -6,7 +6,9 @@
     <title>Log Statistics - Acme Inc</title>
     <link rel="stylesheet" href="../static/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+
     <style>
+        /* Style général */
         html, body {
             height: 100vh;
             margin: 0;
@@ -26,34 +28,86 @@
             flex-direction: column;
             height: 100%;
         }
-        .stats-container {
-            background: #1e1e1e;
-            padding: 15px;
-            flex-grow: 1;
-            overflow-y: auto;
-            border-radius: 10px;
-            border: 1px solid #333;
-        }
-        .stats-item {
-            padding: 10px;
-            border-bottom: 1px solid #333;
-            font-size: 18px;
-        }
-        .actions {
+
+        /* Conteneur des cartes */
+        .stats-section {
             display: flex;
-            gap: 10px;
-            margin-top: 10px;
+            justify-content: center;
+            gap: 20px; /* Espace entre les cards */
         }
-        .btn {
-            background: #333;
+
+        /* Style des cards */
+        .card {
+            width: 200px;
+            height: 120px;
+            border-radius: 20px;
+            background: #212121;
+            box-shadow: 15px 15px 30px rgb(25, 25, 25),
+                        -15px -15px 30px rgb(60, 60, 60);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 15px;
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
             color: #ffffff;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
         }
-        .btn:hover {
-            background: #444;
+        .card-value {
+            font-size: 22px;
+            font-weight: bold;
+            color: #509AF8;
+        }
+
+        /* Styles du bandeau d'information */
+        .info {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            width: 320px;
+            padding: 12px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: start;
+            background: #509AF8;
+            border-radius: 8px;
+            box-shadow: 0px 0px 5px -3px #111;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+        .info.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .info__icon {
+            width: 20px;
+            height: 20px;
+            transform: translateY(-2px);
+            margin-right: 8px;
+        }
+        .info__icon path {
+            fill: #fff;
+        }
+        .info__title {
+            font-weight: 500;
+            font-size: 14px;
+            color: #fff;
+        }
+        .info__close {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin-left: auto;
+        }
+        .info__close path {
+            fill: #fff;
         }
     </style>
 </head>
@@ -61,36 +115,72 @@
     <header class="navbar">
         <div class="nav-container">
             <a href="/" class="logo">Subdomain Finder</a>
+            <nav class="nav-menu">
+                <ul>
+                    <li><a href="/">Logs</a></li>
+                </ul>
+            </nav>
         </div>
     </header>
+    <!-- Bandeau d'information -->
+    <div class="info" id="infoBanner">
+        <div class="info__icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24" height="24" fill="none">
+                <path fill="#ffffff" d="m12 1.5c-5.79844 0-10.5 4.70156-10.5 10.5 0 5.7984 4.70156 10.5 10.5 10.5 5.7984 0 10.5-4.7016 10.5-10.5 0-5.79844-4.7016-10.5-10.5-10.5zm.75 15.5625c0 .1031-.0844.1875-.1875.1875h-1.125c-.1031 0-.1875-.0844-.1875-.1875v-6.375c0-.1031.0844-.1875.1875-.1875h1.125c.1031 0 .1875.0844.1875.1875zm-.75-8.0625c-.2944-.00601-.5747-.12718-.7808-.3375-.206-.21032-.3215-.49305-.3215-.7875s.1155-.57718.3215-.7875c.2061-.21032.4864-.33149.7808-.3375.2944.00601.5747.12718.7808.3375.206.21032.3215.49305.3215.7875s-.1155.57718-.3215.7875c-.2061.21032-.4864.33149-.7808.3375z"></path>
+            </svg>
+        </div>
+        <div class="info__title">Les statistiques sont mises à jour chaque seconde</div>
+        <div class="info__close" id="closeBanner">
+            <svg height="20" viewBox="0 0 20 20" width="20" xmlns="http://www.w3.org/2000/svg">
+                <path d="m15.8333 5.34166-1.175-1.175-4.6583 4.65834-4.65833-4.65834-1.175 1.175 4.65833 4.65834-4.65833 4.6583 1.175 1.175 4.65833-4.6583 4.6583 4.6583 1.175-1.175-4.6583-4.6583z" fill="#ffffff"></path>
+            </svg>
+        </div>
+    </div>
 
     <main class="container">
         <h1>Log Statistics</h1>
         <section class="stats-section">
-            <h2>Statistics Overview</h2>
-            <div id="statsContainer" class="stats-container">
-                <div class="stats-item">Logs per minute: <span id="logsPerMinute">0</span></div>
-                <div class="stats-item">Total logs received: <span id="totalLogs">0</span></div>
+            <div class="card">
+                <div class="card-title">Logs per minute</div>
+                <div class="card-value" id="logsPerMinute">0</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Total logs</div>
+                <div class="card-value" id="totalLogs">0</div>
             </div>
         </section>
     </main>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            var socket = io();
-            var logsPerMinute = 0;
-            var totalLogs = 0;
-            var logTimestamps = [];
+        function updateStats() {
+            fetch('/stats-data')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("logsPerMinute").textContent = data.logs_per_minute;
+                    document.getElementById("totalLogs").textContent = data.total_logs;
+                })
+                .catch(error => console.error('Error fetching stats:', error));
+        }
 
-            socket.on('log', function(msg) {
-                totalLogs++;
-                var currentTime = new Date().getTime();
-                logTimestamps.push(currentTime);
-                logTimestamps = logTimestamps.filter(timestamp => currentTime - timestamp < 60000);
-                logsPerMinute = logTimestamps.length;
+        // Met à jour les stats toutes les 1 secondes
+        setInterval(updateStats, 1000);
 
-                document.getElementById("logsPerMinute").textContent = logsPerMinute;
-                document.getElementById("totalLogs").textContent = totalLogs;
+        // Met à jour immédiatement après le chargement de la page
+        document.addEventListener("DOMContentLoaded", updateStats);
+
+        // Gestion du bandeau d'information
+        document.addEventListener("DOMContentLoaded", function () {
+            const infoBanner = document.getElementById("infoBanner");
+            const closeBanner = document.getElementById("closeBanner");
+
+            // Supprime le bandeau après 10 secondes
+            setTimeout(() => {
+                infoBanner.classList.add("hidden");
+            }, 10000);
+
+            // Permet de fermer manuellement le bandeau en cliquant sur la croix
+            closeBanner.addEventListener("click", () => {
+                infoBanner.classList.add("hidden");
             });
         });
     </script>
