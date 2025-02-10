@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, Response
 from flask_socketio import SocketIO
 import sys
 import threading
@@ -8,7 +8,8 @@ app = Flask(__name__)
 socketio = SocketIO(app)
 
 log_count = 0
-log_timestamp = []  # Garder une cohérence sur le nom
+log_timestamp = []
+log_history = []
 
 class StreamToSocketIO:
     def __init__(self):
@@ -18,6 +19,7 @@ class StreamToSocketIO:
         global log_count, log_timestamp
         if message.strip():  # Évite les lignes vides
             socketio.emit('log', message.strip())
+            log_history.append(str(message.strip()))
             log_count += 1
             current_time = time.time()
             log_timestamp.append(current_time)
@@ -49,6 +51,23 @@ def get_stats():
         "total_logs": log_count,
         "logs_per_minute": logs_per_minute
     })
+
+@app.route('/history')
+def history():
+    return render_template('history.html')
+
+@app.route('/logs-data')
+def get_logs():
+    return jsonify({"logs": log_history})
+
+@app.route('/download-logs')
+def download_logs():
+    log_text = "\n".join(log_history)
+    return Response(
+        log_text,
+        mimetype="text/plain",
+        headers={"Content-Disposition": "attachment;filename=logs.txt"}
+    )
 
 def run_script():
     while True:
