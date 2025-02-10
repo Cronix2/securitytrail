@@ -79,8 +79,8 @@ def generate_1_ip():
             line = file_read.readline().strip()
     else:
         with open("../results/ip_1.txt", "w", encoding="utf-8") as file_write:
-            file_write.write("164.132.235.0")
-            line = "164.132.235.0"
+            file_write.write("0.0.0.0")
+            line = "0.0.0.0"
     line = str(line).split(".")
     line[3] = str(int(line[3]) + 1)
     if int(line[3])+1 >= 256:
