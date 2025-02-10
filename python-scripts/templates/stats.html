@@ -9,6 +9,16 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Style général */
+        @keyframes slideout {
+            0% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(150%);
+                opacity: 0;
+            }
+        }
         html, body {
             height: 100vh;
             margin: 0;
@@ -21,7 +31,7 @@
         }
         .container {
             flex: 1;
-            max-width: 800px;
+            max-width: 900px;
             margin: auto;
             padding: 20px;
             display: flex;
@@ -33,7 +43,7 @@
         .stats-section {
             display: flex;
             justify-content: center;
-            gap: 20px; /* Espace entre les cards */
+            gap: 20px;
         }
 
         /* Style des cards */
@@ -42,8 +52,7 @@
             height: 120px;
             border-radius: 20px;
             background: #212121;
-            box-shadow: 15px 15px 30px rgb(25, 25, 25),
-                        -15px -15px 30px rgb(60, 60, 60);
+            box-shadow: 15px 15px 30px rgb(25, 25, 25), -4px -5px 12px 0px rgb(60, 60, 60);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -61,6 +70,49 @@
             font-size: 22px;
             font-weight: bold;
             color: #509AF8;
+        }
+
+        /* Carte contenant le graphique */
+        .chart-card {
+            width: 100%;
+            background: #212121;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 15px 15px 30px rgb(25, 25, 25), -4px -5px 12px 0px rgb(60, 60, 60);
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Sélecteur d'échelle */
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .time-scale {
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .scale-selector {
+            background: #333;
+            color: #ffffff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .scale-selector:hover {
+            background: #444;
+        }
+
+        canvas {
+            max-height: 300px;
         }
 
         /* Styles du bandeau d'information */
@@ -86,6 +138,9 @@
             opacity: 0;
             pointer-events: none;
         }
+        .info.slideout {
+            animation: slideout 0.8s forwards;
+        }
         .info__icon {
             width: 20px;
             height: 20px;
@@ -109,6 +164,7 @@
         .info__close path {
             fill: #fff;
         }
+
     </style>
 </head>
 <body>
@@ -153,16 +209,26 @@
             </div>
         </section>
 
-        <!-- Zone du graphique -->
-        <section class="chart-container">
+        <!-- Carte contenant le graphique -->
+        <section class="chart-card">
+            <div class="chart-header">
+                <span class="time-scale" id="currentScale">Échelle : 10 minutes</span>
+                <select id="scaleSelector" class="scale-selector">
+                    <option value="1" selected>1 Minute</option>
+                    <option value="10">10 Minutes</option>
+                    <option value="60">1 Heure</option>
+                    <option value="1440">1 Jour</option>
+                    <option value="total">Totalité</option>
+                </select>
+            </div>
             <canvas id="logChart"></canvas>
         </section>
     </main>
 
     <script>
-        const logsPerMinuteData = [];
-        const timeLabels = [];
-        const maxDataPoints = 10; // Affiche les 10 dernières minutes
+        let logsPerMinuteData = [];
+        let timeLabels = [];
+        let maxDataPoints = 10; // Par défaut : 10 dernières minutes
 
         const ctx = document.getElementById('logChart').getContext('2d');
         const logChart = new Chart(ctx, {
@@ -210,7 +276,7 @@
         }
 
         function updateChart() {
-            fetch('/stats-data')
+            fetch(`/stats-data?scale=${maxDataPoints}`)
                 .then(response => response.json())
                 .then(data => {
                     const now = new Date();
@@ -219,7 +285,6 @@
                     logsPerMinuteData.push(data.logs_per_minute);
                     timeLabels.push(timeString);
 
-                    // Limite le nombre de points affichés
                     if (logsPerMinuteData.length > maxDataPoints) {
                         logsPerMinuteData.shift();
                         timeLabels.shift();
@@ -230,29 +295,57 @@
                 .catch(error => console.error('Error updating chart:', error));
         }
 
-        // Met à jour les stats toutes les secondes
-        setInterval(updateStats, 1000);
+        document.getElementById("scaleSelector").addEventListener("change", function() {
+            const selectedScale = this.value;
+            let scaleText = "Échelle : ";
 
-        // Met à jour le graphe toutes les minutes
+            switch (selectedScale) {
+                case "1":
+                    maxDataPoints = 1;
+                    scaleText += "1 Minute";
+                    break;
+                case "10":
+                    maxDataPoints = 10;
+                    scaleText += "10 Minutes";
+                    break;
+                case "60":
+                    maxDataPoints = 60;
+                    scaleText += "1 Heure";
+                    break;
+                case "1440":
+                    maxDataPoints = 1440;
+                    scaleText += "1 Jour";
+                    break;
+                case "total":
+                    maxDataPoints = 10000; // Affiche tout
+                    scaleText += "Totalité";
+                    break;
+            }
+
+            document.getElementById("currentScale").textContent = scaleText;
+            logsPerMinuteData = [];
+            timeLabels = [];
+            updateChart();
+        });
+
+        setInterval(updateStats, 1000);
         setInterval(updateChart, 60000);
 
-        // Met à jour immédiatement après le chargement de la page
         document.addEventListener("DOMContentLoaded", () => {
             updateStats();
             updateChart();
         });
-
         // Gestion du bandeau d'information
         document.addEventListener("DOMContentLoaded", function () {
             const infoBanner = document.getElementById("infoBanner");
             const closeBanner = document.getElementById("closeBanner");
 
             setTimeout(() => {
-                infoBanner.classList.add("hidden");
+            infoBanner.classList.add("slideout");
             }, 10000);
 
             closeBanner.addEventListener("click", () => {
-                infoBanner.classList.add("hidden");
+            infoBanner.classList.add("slideout");
             });
         });
     </script>
