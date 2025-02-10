@@ -60,8 +60,7 @@ def delete_private_ip():
     start_time = time.time()
     private_prefixes = ("192.168.", "172.16.", "10.", "127.")
 
-    with open("../results/ip_list.txt", "r", encoding="utf-8") as infile, open("results/filtered_ip_list.txt", "w",
-                                                                            encoding="utf-8") as outfile:
+    with open("../results/ip_list.txt", "r", encoding="utf-8") as infile, open("results/filtered_ip_list.txt", "w", encoding="utf-8") as outfile:
         with tqdm.tqdm(total=256 * 256 * 256 * 256, desc="Filtering IPs") as pbar:
             for line in infile:
                 if not line.startswith(private_prefixes):
@@ -80,8 +79,8 @@ def generate_1_ip():
             line = file_read.readline().strip()
     else:
         with open("../results/ip_1.txt", "w", encoding="utf-8") as file_write:
-            file_write.write("0.0.0.0")
-            line = "0.0.0.0"
+            file_write.write("164.132.235.0")
+            line = "164.132.235.0"
     line = str(line).split(".")
     line[3] = str(int(line[3]) + 1)
     if int(line[3])+1 >= 256:

@@ -24,6 +24,10 @@ sys.stdout = StreamToSocketIO()  # Redirige print() vers WebSocket
 def index():
     return render_template('index.html')
 
+@app.route('/stats')
+def stats():
+    return render_template('stats.html')
+
 def run_script():
     while True:
         print(f"Test print")

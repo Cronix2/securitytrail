@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Statistics - Acme Inc</title>
+    <link rel="stylesheet" href="../static/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+    <style>
+        html, body {
+            height: 100vh;
+            margin: 0;
+            background: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .container {
+            flex: 1;
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .stats-container {
+            background: #1e1e1e;
+            padding: 15px;
+            flex-grow: 1;
+            overflow-y: auto;
+            border-radius: 10px;
+            border: 1px solid #333;
+        }
+        .stats-item {
+            padding: 10px;
+            border-bottom: 1px solid #333;
+            font-size: 18px;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .btn {
+            background: #333;
+            color: #ffffff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background: #444;
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">Subdomain Finder</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <h1>Log Statistics</h1>
+        <section class="stats-section">
+            <h2>Statistics Overview</h2>
+            <div id="statsContainer" class="stats-container">
+                <div class="stats-item">Logs per minute: <span id="logsPerMinute">0</span></div>
+                <div class="stats-item">Total logs received: <span id="totalLogs">0</span></div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var socket = io();
+            var logsPerMinute = 0;
+            var totalLogs = 0;
+            var logTimestamps = [];
+
+            socket.on('log', function(msg) {
+                totalLogs++;
+                var currentTime = new Date().getTime();
+                logTimestamps.push(currentTime);
+                logTimestamps = logTimestamps.filter(timestamp => currentTime - timestamp < 60000);
+                logsPerMinute = logTimestamps.length;
+
+                document.getElementById("logsPerMinute").textContent = logsPerMinute;
+                document.getElementById("totalLogs").textContent = totalLogs;
+            });
+        });
+    </script>
+</body>
+</html>
