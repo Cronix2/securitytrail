@@ -76,7 +76,7 @@ def run_script():
 
 def start():
     threading.Thread(target=run_script, daemon=True).start()
-    flask_thread = threading.Thread(target=lambda: socketio.run(app, host='0.0.0.0', port=8081, allow_unsafe_werkzeug=True), daemon=True)
+    flask_thread = threading.Thread(target=lambda: socketio.run(app, host='127.0.0.1', port=8081, allow_unsafe_werkzeug=True), daemon=True)
     flask_thread.start()
 
 if __name__ == '__main__':
