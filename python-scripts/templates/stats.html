@@ -8,16 +8,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Style général */
         @keyframes slideout {
-            0% {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            100% {
-                transform: translateX(150%);
-                opacity: 0;
-            }
+            0% { transform: translateX(0); opacity: 1; }
+            100% { transform: translateX(150%); opacity: 0; }
         }
         html, body {
             height: 100vh;
@@ -38,15 +31,11 @@
             flex-direction: column;
             height: 100%;
         }
-
-        /* Conteneur des cartes */
         .stats-section {
             display: flex;
             justify-content: center;
             gap: 20px;
         }
-
-        /* Style des cards */
         .card {
             width: 200px;
             height: 120px;
@@ -60,19 +49,8 @@
             text-align: center;
             padding: 15px;
         }
-        .card-title {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #ffffff;
-        }
-        .card-value {
-            font-size: 22px;
-            font-weight: bold;
-            color: #509AF8;
-        }
-
-        /* Carte contenant le graphique */
+        .card-title { font-size: 16px; font-weight: bold; margin-bottom: 5px; color: #ffffff; }
+        .card-value { font-size: 22px; font-weight: bold; color: #509AF8; }
         .chart-card {
             width: 100%;
             background: #212121;
@@ -84,37 +62,7 @@
             flex-direction: column;
             position: relative;
         }
-
-        /* Sélecteur d'échelle */
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .time-scale {
-            font-size: 16px;
-            font-weight: bold;
-            color: #ffffff;
-        }
-
-        .scale-selector {
-            background: #333;
-            color: #ffffff;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .scale-selector:hover {
-            background: #444;
-        }
-
-        canvas {
-            max-height: 300px;
-        }
-
+        canvas { max-height: 300px; }
         /* Styles du bandeau d'information */
         .info {
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -179,7 +127,6 @@
             </nav>
         </div>
     </header>
-
     <!-- Bandeau d'information -->
     <div class="info" id="infoBanner">
         <div class="info__icon">
@@ -194,10 +141,8 @@
             </svg>
         </div>
     </div>
-
     <main class="container">
         <h1>Log Statistics</h1>
-
         <section class="stats-section">
             <div class="card">
                 <div class="card-title">Logs per minute</div>
@@ -208,27 +153,14 @@
                 <div class="card-value" id="totalLogs">0</div>
             </div>
         </section>
-
-        <!-- Carte contenant le graphique -->
         <section class="chart-card">
-            <div class="chart-header">
-                <span class="time-scale" id="currentScale">Échelle : 10 minutes</span>
-                <select id="scaleSelector" class="scale-selector">
-                    <option value="1" selected>1 Minute</option>
-                    <option value="10">10 Minutes</option>
-                    <option value="60">1 Heure</option>
-                    <option value="1440">1 Jour</option>
-                    <option value="total">Totalité</option>
-                </select>
-            </div>
             <canvas id="logChart"></canvas>
         </section>
     </main>
-
     <script>
         let logsPerMinuteData = [];
         let timeLabels = [];
-        let maxDataPoints = 10; // Par défaut : 10 dernières minutes
+        let maxDataPoints = 60;
 
         const ctx = document.getElementById('logChart').getContext('2d');
         const logChart = new Chart(ctx, {
@@ -249,19 +181,10 @@
             options: {
                 responsive: true,
                 scales: {
-                    x: {
-                        grid: { color: '#333' },
-                        ticks: { color: '#ffffff' }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: '#333' },
-                        ticks: { color: '#ffffff' }
-                    }
+                    x: { grid: { color: '#333' }, ticks: { color: '#ffffff' } },
+                    y: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#ffffff' } }
                 },
-                plugins: {
-                    legend: { display: false }
-                }
+                plugins: { legend: { display: false } }
             }
         });
 
@@ -276,57 +199,21 @@
         }
 
         function updateChart() {
-            fetch(`/stats-data?scale=${maxDataPoints}`)
+            fetch('/stats-data')
                 .then(response => response.json())
                 .then(data => {
                     const now = new Date();
                     const timeString = now.getHours() + ":" + now.getMinutes();
-
                     logsPerMinuteData.push(data.logs_per_minute);
                     timeLabels.push(timeString);
-
                     if (logsPerMinuteData.length > maxDataPoints) {
                         logsPerMinuteData.shift();
                         timeLabels.shift();
                     }
-
                     logChart.update();
                 })
                 .catch(error => console.error('Error updating chart:', error));
         }
-
-        document.getElementById("scaleSelector").addEventListener("change", function() {
-            const selectedScale = this.value;
-            let scaleText = "Échelle : ";
-
-            switch (selectedScale) {
-                case "1":
-                    maxDataPoints = 1;
-                    scaleText += "1 Minute";
-                    break;
-                case "10":
-                    maxDataPoints = 10;
-                    scaleText += "10 Minutes";
-                    break;
-                case "60":
-                    maxDataPoints = 60;
-                    scaleText += "1 Heure";
-                    break;
-                case "1440":
-                    maxDataPoints = 1440;
-                    scaleText += "1 Jour";
-                    break;
-                case "total":
-                    maxDataPoints = 10000; // Affiche tout
-                    scaleText += "Totalité";
-                    break;
-            }
-
-            document.getElementById("currentScale").textContent = scaleText;
-            logsPerMinuteData = [];
-            timeLabels = [];
-            updateChart();
-        });
 
         setInterval(updateStats, 1000);
         setInterval(updateChart, 60000);
@@ -340,14 +227,11 @@
             const infoBanner = document.getElementById("infoBanner");
             const closeBanner = document.getElementById("closeBanner");
 
-            setTimeout(() => {
-            infoBanner.classList.add("slideout");
-            }, 10000);
+            setTimeout(() => { infoBanner.classList.add("slideout");}, 10000);
 
-            closeBanner.addEventListener("click", () => {
-            infoBanner.classList.add("slideout");
-            });
+            closeBanner.addEventListener("click", () => {infoBanner.classList.add("slideout");});
         });
+
     </script>
 </body>
 </html>
