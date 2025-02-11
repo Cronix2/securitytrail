@@ -154,35 +154,39 @@ def inject_informations_in_db(con, cur, response, ip):
     if response != "nothing":
         records = response["subdomains"]
         for item in records:
-            # find ip address of the subdomain
             try:
                 ip_address = socket.gethostbyname(item)
             except socket.herror:
                 ip_address = "not found"
-            # check if ip address is already in the database
-            if cur.execute("SELECT * FROM `subdomains-link-to-IP` WHERE ip_address = ?", (ip_address,)):
-                if cur.execute("SELECT subdomains FROM `subdomains-link-to-IP` WHERE ip_address = ?", (ip_address,)):
-                    subdomains = cur.fetchone()[0]
-                    subdomains.append(item)
-                    cur.execute("UPDATE `subdomains-link-to-IP` SET subdomains = ? WHERE ip_address = ?", (subdomains, ip_address))
+            
+            # Extraire le parent domain du subdomain
+            parts = item.split(".")
+            if len(parts) > 2:
+                parent_domain = ".".join(parts[-2:])
             else:
-                cur.execute("INSERT INTO `subdomains-link-to-IP` (ip_address, subdomains) VALUES (?, ?)", (ip_address, [item]))
+                parent_domain = item  # Cas où c'est un domaine sans sous-domaine
+            
+            # Vérifier si l'IP existe déjà
+            cur.execute("SELECT hostname FROM `subdomains-link-to-IP` WHERE ip_address = ? AND hostname = ?", (ip_address, item))
+            result = cur.fetchone()
+            
+            if result:
+                # L'entrée existe déjà, ne rien faire
+                continue
+            else:
+                # Insérer la nouvelle entrée
+                cur.execute("INSERT INTO `subdomains-link-to-IP` (hostname, parent_domain, ip_address) VALUES (?, ?, ?)", (item, parent_domain, ip_address))
     else:
-        if cur.execute("SELECT * FROM `subdomains-link-to-IP` WHERE ip_address = ?", (ip,)):
-            if cur.execute("SELECT subdomains FROM `subdomains-link-to-IP` WHERE ip_address = ?", (ip,)):
-                records = cur.fetchone()[0]
-                cur.execute("UPDATE `subdomains-link-to-IP` SET subdomains = ? WHERE ip_address = ?", (records, ip))
-        else:
-            records = ""
+        # Cas où il n'y a pas de subdomain, on enregistre uniquement l'IP
+        cur.execute("SELECT * FROM `subdomains-link-to-IP` WHERE ip_address = ?", (ip,))
+        result = cur.fetchone()
+        
+        if not result:
             try:
-                insert = ("INSERT INTO `subdomains-link-to-IP` (ip_address, subdomains) VALUES ('"+ip+"', '"+records+"')")
-                #print(insert, flush=True)
-                cur.execute(insert)
-                #print("send to the database", flush=True)  
-            except mariadb.Error as e:
-                print(f"Error mariadb: {e}", flush=True)
+                cur.execute("INSERT INTO `subdomains-link-to-IP` (hostname, parent_domain, ip_address) VALUES (?, ?, ?)", ("unknown", "unknown", ip))
             except Exception as e:
-                print(f"Error: {e}", flush=True)    
+                print(f"Error: {e}", flush=True)
+    
     con.commit()
 
 

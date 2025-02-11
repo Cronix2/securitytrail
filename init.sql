@@ -4,6 +4,8 @@ USE subdomains;
 
 CREATE TABLE IF NOT EXISTS `subdomains-link-to-IP` (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    subdomains VARCHAR(255) NOT NULL,
-    ip_address VARCHAR(45) NOT NULL
+    hostname VARCHAR(255) NOT NULL,
+    parent_domain VARCHAR(255) NOT NULL,
+    ip_address VARCHAR(45) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

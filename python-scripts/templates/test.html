@@ -112,6 +112,42 @@
         .info__close path {
             fill: #fff;
         }
+        .chart-card {
+            width: 100%;
+            background: #212121;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 15px 15px 30px rgb(25, 25, 25), -4px -5px 12px 0px rgb(60, 60, 60);
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .time-scale {
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .scale-selector {
+            background: #333;
+            color: #ffffff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .scale-selector:hover {
+            background: #444;
+        }
+        canvas {
+            max-height: 300px;
+        }
 
     </style>
 </head>
@@ -154,6 +190,16 @@
             </div>
         </section>
         <section class="chart-card">
+            <div class="chart-header">
+                <span class="time-scale" id="currentScale">Échelle : 1 Minute</span>
+                <select id="scaleSelector" class="scale-selector">
+                    <option value="1">1 Minute</option>
+                    <option value="10">10 Minutes</option>
+                    <option value="60">1 Heure</option>
+                    <option value="1440">1 Jour</option>
+                    <option value="total">Totalité</option>
+                </select>
+            </div>
             <canvas id="logChart"></canvas>
         </section>
     </main>
@@ -161,7 +207,39 @@
         let logsPerMinuteData = [];
         let timeLabels = [];
         let maxDataPoints = 60;
-
+        let selectedScale = "1";  // Par défaut : 1 minute
+    
+        document.getElementById("scaleSelector").addEventListener("change", function () {
+            selectedScale = this.value;
+            let scaleText = "Échelle : ";
+            switch (selectedScale) {
+                case "1":
+                    maxDataPoints = 60;
+                    scaleText += "1 Minute";
+                    break;
+                case "10":
+                    maxDataPoints = 60;
+                    scaleText += "10 Minutes";
+                    break;
+                case "60":
+                    maxDataPoints = 60;
+                    scaleText += "1 Heure";
+                    break;
+                case "1440":
+                    maxDataPoints = 30;
+                    scaleText += "1 Jour";
+                    break;
+                case "total":
+                    maxDataPoints = 30;
+                    scaleText += "Totalité";
+                    break;
+            }
+            document.getElementById("currentScale").textContent = scaleText;
+            logsPerMinuteData = [];
+            timeLabels = [];
+            updateChart();
+        });
+    
         const ctx = document.getElementById('logChart').getContext('2d');
         const logChart = new Chart(ctx, {
             type: 'line',
@@ -187,41 +265,49 @@
                 plugins: { legend: { display: false } }
             }
         });
-
-        function updateStats() {
-            fetch('/stats-data')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("logsPerMinute").textContent = data.logs_per_minutes;
-                    document.getElementById("totalLogs").textContent = data.total_logs;
-                })
-                .catch(error => console.error('Error fetching stats:', error));
-        }
-
+    
         function updateChart() {
-            fetch('/stats-data')
+            fetch(`/stats-data`)
                 .then(response => response.json())
                 .then(data => {
-                    const now = new Date();
-                    const timeString = now.getHours() + ":" + now.getMinutes();
-                    logsPerMinuteData.push(data.logs_per_minute);
-                    timeLabels.push(timeString);
-                    if (logsPerMinuteData.length > maxDataPoints) {
-                        logsPerMinuteData.shift();
-                        timeLabels.shift();
+                    let values = [];
+                    let labels = [];
+    
+                    switch (selectedScale) {
+                        case "1":
+                            values = data.logs_per_minute.slice(-60);  
+                            labels = Array.from({ length: values.length }, (_, i) => `${i} min`);
+                            break;
+                        case "10":
+                            values = data.log_average_per_hour.slice(-60);
+                            labels = Array.from({ length: values.length }, (_, i) => `${i * 10} min`);
+                            break;
+                        case "60":
+                            values = data.log_average_per_day.slice(-60);
+                            labels = Array.from({ length: values.length }, (_, i) => `H-${i}`);
+                            break;
+                        case "1440":
+                            values = data.log_average_per_day.slice(-30);
+                            labels = Array.from({ length: values.length }, (_, i) => `J-${i}`);
+                            break;
+                        case "total":
+                            values = data.log_average_per_day_total;
+                            labels = Array.from({ length: values.length }, (_, i) => `J-${i}`);
+                            break;
                     }
+    
+                    logsPerMinuteData.length = 0;
+                    timeLabels.length = 0;
+                    logsPerMinuteData.push(...values);
+                    timeLabels.push(...labels);
+    
                     logChart.update();
                 })
                 .catch(error => console.error('Error updating chart:', error));
         }
-
-        setInterval(updateStats, 1000);
+    
         setInterval(updateChart, 60000);
-
-        document.addEventListener("DOMContentLoaded", () => {
-            updateStats();
-            updateChart();
-        });
+        document.addEventListener("DOMContentLoaded", updateChart);
         // Gestion du bandeau d'information
         document.addEventListener("DOMContentLoaded", function () {
             const infoBanner = document.getElementById("infoBanner");
