@@ -12,6 +12,55 @@
             0% { transform: translateX(0); opacity: 1; }
             100% { transform: translateX(150%); opacity: 0; }
         }
+        /* Styles du bandeau d'information */
+        .info {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            width: 320px;
+            padding: 12px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: start;
+            background: #509AF8;
+            border-radius: 8px;
+            box-shadow: 0px 0px 5px -3px #111;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+        .info.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .info.slideout {
+            animation: slideout 0.8s forwards;
+        }
+        .info__icon {
+            width: 20px;
+            height: 20px;
+            transform: translateY(-2px);
+            margin-right: 8px;
+        }
+        .info__icon path {
+            fill: #fff;
+        }
+        .info__title {
+            font-weight: 500;
+            font-size: 14px;
+            color: #fff;
+        }
+        .info__close {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin-left: auto;
+        }
+        .info__close path {
+            fill: #fff;
+        }
         html, body {
             height: 100vh;
             margin: 0;
@@ -62,77 +111,11 @@
             flex-direction: column;
             position: relative;
         }
-        canvas { max-height: 300px; }
-        /* Styles du bandeau d'information */
-        .info {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            width: 320px;
-            padding: 12px;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: start;
-            background: #509AF8;
-            border-radius: 8px;
-            box-shadow: 0px 0px 5px -3px #111;
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            z-index: 1000;
-            opacity: 1;
-            transition: opacity 0.5s ease-out;
-        }
-        .info.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        .info.slideout {
-            animation: slideout 0.8s forwards;
-        }
-        .info__icon {
-            width: 20px;
-            height: 20px;
-            transform: translateY(-2px);
-            margin-right: 8px;
-        }
-        .info__icon path {
-            fill: #fff;
-        }
-        .info__title {
-            font-weight: 500;
-            font-size: 14px;
-            color: #fff;
-        }
-        .info__close {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-            margin-left: auto;
-        }
-        .info__close path {
-            fill: #fff;
-        }
-        .chart-card {
-            width: 100%;
-            background: #212121;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 15px 15px 30px rgb(25, 25, 25), -4px -5px 12px 0px rgb(60, 60, 60);
-            margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
         .chart-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
-        }
-        .time-scale {
-            font-size: 16px;
-            font-weight: bold;
-            color: #ffffff;
         }
         .scale-selector {
             background: #333;
@@ -145,10 +128,42 @@
         .scale-selector:hover {
             background: #444;
         }
-        canvas {
-            max-height: 300px;
+        canvas { max-height: 300px; }
+        .health-card {
+            width: 100%;
+            background: #212121;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 15px 15px 30px rgb(25, 25, 25), -4px -5px 12px 0px rgb(60, 60, 60);
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
         }
-
+        .health-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .health-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background: #2a2a2a;
+            border-radius: 10px;
+        }
+        .status-indicator {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .status-up { background-color: #4CAF50; } /* Vert */
+        .status-down { background-color: #FF5733; } /* Rouge */
+        .health-name { color: #fff; font-weight: bold; }
+        .health-port a { color: #509AF8; text-decoration: none; }
+        .health-port a:hover { text-decoration: underline; }
+        .health-uptime { color: #bbb; }
     </style>
 </head>
 <body>
@@ -163,7 +178,6 @@
             </nav>
         </div>
     </header>
-    <!-- Bandeau d'information -->
     <div class="info" id="infoBanner">
         <div class="info__icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -202,44 +216,17 @@
             </div>
             <canvas id="logChart"></canvas>
         </section>
+        <section class="health-card">
+            <div id="healthStatus" class="health-container">
+                <!-- Les services seront affichés ici dynamiquement -->
+            </div>
+        </section>
     </main>
     <script>
         let logsPerMinuteData = [];
         let timeLabels = [];
         let maxDataPoints = 60;
-        let selectedScale = "1";  // Par défaut : 1 minute
-    
-        document.getElementById("scaleSelector").addEventListener("change", function () {
-            selectedScale = this.value;
-            let scaleText = "Échelle : ";
-            switch (selectedScale) {
-                case "1":
-                    maxDataPoints = 60;
-                    scaleText += "1 Minute";
-                    break;
-                case "10":
-                    maxDataPoints = 60;
-                    scaleText += "10 Minutes";
-                    break;
-                case "60":
-                    maxDataPoints = 60;
-                    scaleText += "1 Heure";
-                    break;
-                case "1440":
-                    maxDataPoints = 30;
-                    scaleText += "1 Jour";
-                    break;
-                case "total":
-                    maxDataPoints = 30;
-                    scaleText += "Totalité";
-                    break;
-            }
-            document.getElementById("currentScale").textContent = scaleText;
-            logsPerMinuteData = [];
-            timeLabels = [];
-            updateChart();
-        });
-    
+
         const ctx = document.getElementById('logChart').getContext('2d');
         const logChart = new Chart(ctx, {
             type: 'line',
@@ -265,49 +252,47 @@
                 plugins: { legend: { display: false } }
             }
         });
-    
-        function updateChart() {
-            fetch(`/stats-data`)
+
+        document.getElementById("scaleSelector").addEventListener("change", function() {
+            const selectedScale = this.value;
+            let scaleText = "Échelle : ";
+            switch (selectedScale) {
+                case "1": maxDataPoints = 60; scaleText += "1 Minute"; break;
+                case "10": maxDataPoints = 600; scaleText += "10 Minutes"; break;
+                case "60": maxDataPoints = 3600; scaleText += "1 Heure"; break;
+                case "1440": maxDataPoints = 86400; scaleText += "1 Jour"; break;
+                case "total": maxDataPoints = 1000000; scaleText += "Totalité"; break;
+            }
+            document.getElementById("currentScale").textContent = scaleText;
+        });
+
+        function updateStats() {
+            fetch('/stats-data')
                 .then(response => response.json())
                 .then(data => {
-                    let values = [];
-                    let labels = [];
-    
-                    switch (selectedScale) {
-                        case "1":
-                            values = data.logs_per_minute.slice(-60);  
-                            labels = Array.from({ length: values.length }, (_, i) => `${i} min`);
-                            break;
-                        case "10":
-                            values = data.log_average_per_hour.slice(-60);
-                            labels = Array.from({ length: values.length }, (_, i) => `${i * 10} min`);
-                            break;
-                        case "60":
-                            values = data.log_average_per_day.slice(-60);
-                            labels = Array.from({ length: values.length }, (_, i) => `H-${i}`);
-                            break;
-                        case "1440":
-                            values = data.log_average_per_day.slice(-30);
-                            labels = Array.from({ length: values.length }, (_, i) => `J-${i}`);
-                            break;
-                        case "total":
-                            values = data.log_average_per_day_total;
-                            labels = Array.from({ length: values.length }, (_, i) => `J-${i}`);
-                            break;
-                    }
-    
-                    logsPerMinuteData.length = 0;
-                    timeLabels.length = 0;
-                    logsPerMinuteData.push(...values);
-                    timeLabels.push(...labels);
-    
+                    document.getElementById("logsPerMinute").textContent = data.logs_per_minutes;
+                    document.getElementById("totalLogs").textContent = data.total_logs;
+                })
+                .catch(error => console.error('Error fetching stats:', error));
+        }
+
+        function updateChart() {
+            fetch('/stats-data')
+                .then(response => response.json())
+                .then(data => {
+                    logsPerMinuteData.push(data.logs_per_minute);
+                    if (logsPerMinuteData.length > maxDataPoints) logsPerMinuteData.shift();
                     logChart.update();
                 })
                 .catch(error => console.error('Error updating chart:', error));
         }
-    
+
+        setInterval(updateStats, 1000);
         setInterval(updateChart, 60000);
         document.addEventListener("DOMContentLoaded", updateChart);
+
+
+
         // Gestion du bandeau d'information
         document.addEventListener("DOMContentLoaded", function () {
             const infoBanner = document.getElementById("infoBanner");
@@ -318,6 +303,45 @@
             closeBanner.addEventListener("click", () => {infoBanner.classList.add("slideout");});
         });
 
+
+
+        // Gestion de l'état des services
+        function updateHealthCheck() {
+            fetch('/health-check') // Endpoint Flask qui renvoie l'état des services
+                .then(response => response.json())
+                .then(data => {
+                    const healthContainer = document.getElementById("healthStatus");
+                    healthContainer.innerHTML = "";
+                    data.forEach(service => {
+                        const serviceElement = document.createElement("div");
+                        serviceElement.classList.add("health-item");
+
+                        const statusIndicator = document.createElement("div");
+                        statusIndicator.classList.add("status-indicator");
+                        statusIndicator.classList.add(service.status === "UP" ? "status-up" : "status-down");
+
+                        //create uptimeFormatted if uptime is under 60 seconds print in seconds but if uptime is under 60 minutes print in minutes else print in hours
+                        const uptimeFormatted = service.uptime > 0 ? service.uptime < 60 ? `${service.uptime} sec` : service.uptime < 3600 ? `${Math.floor(service.uptime / 60)} min` : `${Math.floor(service.uptime / 3600)} h` : "N/A";
+
+                        const portDisplay = service.port ? `:${service.port}` : "";
+                        const portLink = service.host ? `<a href="http://${service.link}/" target="_blank">${portDisplay}</a>` : portDisplay;
+
+                        serviceElement.innerHTML = `
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                ${statusIndicator.outerHTML}
+                                <span class="health-name">${service.name}</span>
+                            </div>
+                            <span class="health-port">${portLink}</span>
+                            <span class="health-uptime">Uptime: ${uptimeFormatted}</span>
+                        `;
+                        healthContainer.appendChild(serviceElement);
+                    });
+                })
+                .catch(error => console.error('Erreur lors du chargement du health check:', error));
+        }
+
+        setInterval(updateHealthCheck, 1000); // Rafraîchir toutes les 10 secondes
+        document.addEventListener("DOMContentLoaded", updateHealthCheck);
     </script>
 </body>
 </html>

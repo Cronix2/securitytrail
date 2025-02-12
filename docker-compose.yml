@@ -41,10 +41,13 @@ services:
       - DB-subdomains
     volumes:
       - ./python-scripts:/app
+      - /var/run/docker.sock:/var/run/docker.sock  # Montre le socket Docker au conteneur
     ports:
       - "8081:8081"
     networks:
       - my_network
+    environment:
+      DOCKER_HOST: "unix:///var/run/docker.sock"  # Définit l'accès à l'API Docker
 
 volumes:
   mariadb_data:
