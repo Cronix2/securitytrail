@@ -1,10 +1,12 @@
-from flask import Flask, render_template, jsonify, Response
+from flask import Flask, render_template, jsonify, Response, request
 from flask_socketio import SocketIO
 import socket
 import sys
 import threading
 import time
 import docker
+import os
+import re
 from datetime import datetime
 
 
@@ -19,6 +21,13 @@ logs_per_minute = []  # Moyenne des logs par minute (max 60 éléments)
 log_average_per_hour = []  # Moyenne des logs par heure (max 24 éléments)
 log_average_per_day = []  # Moyenne des logs par jour (max 30 éléments)
 log_average_per_day_total = []  # Moyenne des logs par jour sans limite
+
+UPLOAD_FOLDER = "uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# Vérification stricte des lignes du .env
+EXPECTED_KEYS = ["API_KEY=", "DB_USER=", "DB_PASSWORD=", "DB_HOST="]
+VALID_CHARS = re.compile(r"^[a-zA-Z0-9\s\-_,.=@\"]+$")
 
 # Liste des services à checker avec leur port et type
 services = {
@@ -209,6 +218,48 @@ def download_logs():
         mimetype="text/plain",
         headers={"Content-Disposition": "attachment;filename=logs.txt"}
     )
+
+@app.route('/settings')
+def settings():
+    return render_template('env_create.html')
+
+
+@app.route('/upload-env', methods=['POST'])
+def upload_env():
+    if 'file' not in request.files:
+        return jsonify({"message": "Aucun fichier reçu"}), 400
+
+    file = request.files['file']
+
+    print(f"Fichier reçu : {file.filename}")
+
+    if not file.filename.endswith(".env"):
+        return jsonify({"message": "Le fichier doit être un .env"}), 400
+
+    file_path = os.path.join(UPLOAD_FOLDER, ".env")
+    file.save(file_path)
+
+    print("Fichier sauvegardé, vérification du contenu...")
+
+    with open(file_path, 'r', encoding="utf-8") as f:
+        lines = f.readlines()
+
+    print("Contenu du fichier reçu :")
+    for i, line in enumerate(lines):
+        print(f"Ligne {i+1}: {line.strip()}")
+
+    if len(lines) != 4:
+        return jsonify({"message": "Le fichier doit contenir exactement 4 lignes"}), 400
+
+    for i, line in enumerate(lines):
+        line = line.strip()
+        if not line.startswith(EXPECTED_KEYS[i]) or len(line) > 100 or not VALID_CHARS.match(line):
+            print(f"Erreur format ligne {i+1}: {line}")
+            return jsonify({"message": f"Erreur format à la ligne {i+1}"}), 400
+
+    print("Fichier .env valide ✅")
+    return jsonify({"message": "Fichier .env valide !"}), 200
+
 
 def run_script():
     while True:

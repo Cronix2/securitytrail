@@ -92,6 +92,11 @@
             color: #aab1b8;
             margin-top: 5px;
         }
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+        }
         .hidden-file-input {
             display: none;
         }
@@ -115,25 +120,22 @@
         <form id="envForm">
             <label for="apiKey">API key:</label>
             <input type="text" id="apiKey" name="API_KEY" required>
-
             <label for="dbUser">Username:</label>
             <input type="text" id="dbUser" name="DB_USER" required>
-
             <label for="dbPassword">Password:</label>
             <input type="password" id="dbPassword" name="DB_PASSWORD" required>
-
             <label for="dbHost">Host:</label>
             <input type="text" id="dbHost" name="DB_HOST" required>
-
             <button type="button" onclick="generateEnvFile()"><p class="button_title">Generate</p></button>
         </form>
         <input type="file" id="fileInput" class="hidden-file-input" accept=".env">
         <div class="env-box" id="dropZone" onclick="document.getElementById('fileInput').click();">
             <label for="file" class="custum-file-upload">
-                <div class="icon"></div>
+                <div class="icon" id="fileStatusIcon"></div>
             </label>
             <p class="upload_strong"><strong>Upload .env file</strong></p>
             <p class="upload_small">Drag and drop your .env file here or click to browse</p>
+            <p class="error-message" id="errorMessage"></p
         </div>
     </main>
     <script>
@@ -154,16 +156,94 @@
             document.body.removeChild(a);
         }
         
+
+        function validateEnvFile(file) {
+            const fileStatusIcon = document.getElementById('fileStatusIcon');
+            const errorMessage = document.getElementById('errorMessage');
+            fileStatusIcon.innerHTML = '';
+            errorMessage.textContent = '';
+            
+            if (!file) {
+                console.error("Aucun fichier fourni à validateEnvFile !");
+                return;
+            }
+
+            // Renommer le fichier s'il n'est pas nommé correctement
+            const renamedFile = new File([file], ".env", { type: file.type });
+            file = renamedFile;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const lines = event.target.result.split("\n");
+                if (lines.length !== 4) {
+                    errorMessage.style.color = "red";
+                    fileStatusIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="red" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="red" stroke-width="2" fill="none" /><line x1="8" y1="8" x2="16" y2="16" stroke="red" stroke-width="2" /><line x1="16" y1="8" x2="8" y2="16" stroke="red" stroke-width="2" /></svg>';
+                    errorMessage.textContent = "Le fichier doit contenir exactement 4 lignes.";
+                    return;
+                }
+                const regex = /^[a-zA-Z0-9\s\-_,.=@"]+$/;
+                const expectedKeys = ["API_KEY=", "DB_USER=", "DB_PASSWORD=", "DB_HOST="];
+                for (let i = 0; i < 4; i++) {
+                    if (!lines[i].startsWith(expectedKeys[i])){
+                        errorMessage.style.color = "red";
+                        fileStatusIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="red" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="red" stroke-width="2" fill="none" /><line x1="8" y1="8" x2="16" y2="16" stroke="red" stroke-width="2" /><line x1="16" y1="8" x2="8" y2="16" stroke="red" stroke-width="2" /></svg>';
+                        errorMessage.textContent = "Format incorrect à la ligne " + (i + 1) + " erreur 1";
+                        return;
+                    }
+                    if (lines[i].length > 200){
+                        errorMessage.style.color = "red";
+                        fileStatusIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="red" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="red" stroke-width="2" fill="none" /><line x1="8" y1="8" x2="16" y2="16" stroke="red" stroke-width="2" /><line x1="16" y1="8" x2="8" y2="16" stroke="red" stroke-width="2" /></svg>';
+                        errorMessage.textContent = "Format incorrect à la ligne " + (i + 1) + " erreur 2";
+                        return;
+                    }
+                    if (!regex.test(lines[i].substring(expectedKeys[i].length))) {
+                        errorMessage.style.color = "red";
+                        fileStatusIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="red" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="red" stroke-width="2" fill="none" /><line x1="8" y1="8" x2="16" y2="16" stroke="red" stroke-width="2" /><line x1="16" y1="8" x2="8" y2="16" stroke="red" stroke-width="2" /></svg>';
+                        errorMessage.textContent = "Format incorrect à la ligne " + (i + 1) + " erreur 3";
+                        return;
+                    }
+                }
+                sendFileToServer(file);
+                fileStatusIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="green" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="green" stroke-width="2" fill="none" /><path d="M8 12l3 3l5 -5" stroke="green" stroke-width="2" fill="none" /></svg>';
+                errorMessage.textContent = "Fichier .env valide !";
+                errorMessage.style.color = "green";
+            };
+            reader.readAsText(file);
+        }
+
+
+
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            validateEnvFile(event.target.files[0]);
+        });
+
         document.getElementById('dropZone').addEventListener('dragover', (event) => {
             event.preventDefault();
         });
+
         document.getElementById('dropZone').addEventListener('drop', (event) => {
             event.preventDefault();
             const file = event.dataTransfer.files[0];
-            if (file && file.name.endsWith('.env')) {
-                document.getElementById('fileInput').files = event.dataTransfer.files;
-            }
+            validateEnvFile(file);
         });
+
+        function sendFileToServer(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            console.log("Envoi du fichier : ", file.name);
+
+            fetch('/upload-env', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);
+                document.getElementById('errorMessage').textContent = data.message;
+            })
+            .catch(error => console.error('Error:', error));
+        }
     </script>
 </body>
 </html>
