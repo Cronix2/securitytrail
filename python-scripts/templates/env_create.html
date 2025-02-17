@@ -16,6 +16,7 @@
             flex-direction: column;
             overflow: hidden;
         }
+
         .container {
             background: #161b22;
             padding: 20px;
@@ -26,27 +27,29 @@
             text-align: center;
             border: 1px solid #30363d;
         }
+
         h1 {
             font-size: 22px;
             margin-bottom: 20px;
         }
+
         form {
             display: flex;
             flex-direction: column;
         }
+
         label {
             margin: 5px 0;
             font-weight: bold;
             text-align: left;
         }
-        input {
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #30363d;
-            border-radius: 4px;
+
+        /* input {
             background: #0d1117;
             color: #c9d1d9;
-        }
+            border: 0px solid;
+        } */
+
         button {
             background: #238636;
             color: white;
@@ -57,14 +60,17 @@
             font-size: 16px;
             margin-top: 10px;
         }
+
         button:hover {
             background: #2ea043;
         }
+
         .button_title {
             margin: 0;
             font: inherit;
             font-size: large;
         }
+
         .env-box {
             border: 1px dashed #30363d;
             padding: 15px;
@@ -72,38 +78,104 @@
             background: #161b22;
             cursor: pointer;
         }
+
         .env-box.drag-over {
             background: rgba(255, 255, 255, 0.1); /* Effet de filtre blanc semi-transparent */
             border: 1px dashed #ffffff; /* Bordure plus visible */
             transition: all 0.3s ease-in-out;
         }
+
         .custum-file-upload .icon {
             display: flex;
             align-items: center;
             justify-content: center;
             margin: auto;
         }
+
         .custum-file-upload .icon svg {
             height: 80px;
             fill: #e8e8e8;
         }
+
         .upload_strong {
             font-size: 16px;
             font-weight: bold;
             margin-top: 10px;
         }
+
         .upload_small {
             font-size: 14px;
             color: #aab1b8;
             margin-top: 5px;
         }
+
         .input-error {
             border: 2px solid red !important;
-            /*blur effect*/
             box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
             animation: shake 0.3s;
             animation-iteration-count: 1;
         }
+
+        /* .input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            background: #0d1117;
+            color: #c9d1d9;
+        } */
+
+        .input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 10px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            padding: 5px;
+        }
+
+        .input-container input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 10px;
+            color: #c9d1d9;
+            font-size: 14px;
+            outline: none;
+            width: 100%;
+        }
+
+        .input-container input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+            filter: blur(3px);
+            transition: filter 0.3s ease-in-out, color 0.3s ease-in-out;
+        }
+
+        .input-container input:focus::placeholder {
+            filter: blur(0px);
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .eye-icon {
+            position: absolute;
+            right: 10px;
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            stroke: white;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .eye-icon:hover {
+            opacity: 0.7;
+        }
+
 
         .error-message {
             color: red;
@@ -111,9 +183,17 @@
             margin-top: 3px;
             display: none;
         }
+
         .hidden-file-input {
             display: none;
         }
+
+        .success-effect {
+            border: 1px solid white !important;
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.8) !important;
+            transition: all 0.5s ease-in-out;
+        }
+
     </style>
 </head>
 <body>
@@ -129,23 +209,40 @@
             </nav>
         </div>
     </header>
-    <main class="container">
+    <main class="container" id="mainContainer">
         <h1>Create or modify .env file</h1>
         <form id="envForm">
             <label for="apiKey">API key:</label>
-            <input type="text" id="apiKey" name="API_KEY" required>
+            <div class="input-container">
+                <input type="password" id="apiKey" name="API_KEY" required>
+                <svg id="toggleApiKey" class="eye-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 12C2.5 7 7 3.5 12 3.5C17 3.5 21.5 7 23 12C21.5 17 17 20.5 12 20.5C7 20.5 2.5 17 1 12Z" stroke="#ffffff" stroke-width="2"></path>
+                    <circle cx="12" cy="12" r="3" stroke="#ffffff" stroke-width="2"></circle>
+                </svg>
+            </div>
             <p class="error-message"></p>
 
+
             <label for="dbUser">Username:</label>
-            <input type="text" id="dbUser" name="DB_USER" required>
+            <div class="input-container">
+                <input type="text" id="dbUser" name="DB_USER" required>
+            </div>
             <p class="error-message"></p>
 
             <label for="dbPassword">Password:</label>
-            <input type="password" id="dbPassword" name="DB_PASSWORD" required>
+            <div class="input-container">
+                <input type="password" id="dbPassword" name="DB_PASSWORD" required>
+                <svg id="togglepassword" class="eye-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 12C2.5 7 7 3.5 12 3.5C17 3.5 21.5 7 23 12C21.5 17 17 20.5 12 20.5C7 20.5 2.5 17 1 12Z" stroke="#ffffff" stroke-width="2"></path>
+                    <circle cx="12" cy="12" r="3" stroke="#ffffff" stroke-width="2"></circle>
+                </svg>
+            </div>
             <p class="error-message"></p>
 
             <label for="dbHost">Host:</label>
-            <input type="text" id="dbHost" name="DB_HOST" required>
+            <div class="input-container">
+                <input type="text" id="dbHost" name="DB_HOST" required>
+            </div>
             <p class="error-message"></p>
 
             <button type="button" onclick="generateEnvFile()"><p class="button_title">Generate</p></button>
@@ -169,6 +266,78 @@
         </div>
     </main>
     <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch("/info-env")
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Fichier .env introuvable");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (Array.isArray(data) && data.length > 0) {
+                        const envValues = data[0]; // Récupérer le premier objet du tableau
+
+                        // Vérifie si les clés existent et met à jour les placeholders
+                        if (envValues.API_KEY) {
+                            document.getElementById("apiKey").placeholder = envValues.API_KEY;
+                        }
+                        if (envValues.DB_USER) {
+                            document.getElementById("dbUser").placeholder = envValues.DB_USER;
+                        }
+                        if (envValues.DB_PASSWORD) {
+                            document.getElementById("dbPassword").placeholder = envValues.DB_PASSWORD;
+                        }
+                        if (envValues.DB_HOST) {
+                            document.getElementById("dbHost").placeholder = envValues.DB_HOST;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.warn("Impossible de récupérer le fichier .env :", error);
+                });
+        });
+
+        document.getElementById("toggleApiKey").addEventListener("click", function () {
+            const apiKeyInput = document.getElementById("apiKey");
+            const eyeIcon = document.getElementById("toggleApiKey");
+
+            if (apiKeyInput.type === "password") {
+                apiKeyInput.type = "text"; // Montre la clé API
+                eyeIcon.innerHTML = `
+                    <path d="M1 12C2.5 7 7 3.5 12 3.5C17 3.5 21.5 7 23 12C21.5 17 17 20.5 12 20.5C7 20.5 2.5 17 1 12Z" stroke="#ffffff" stroke-width="2"></path>
+                    <circle cx="12" cy="12" r="3" stroke="#ffffff" stroke-width="2"></circle>
+                    <path d="M3 3L21 21" stroke="#ffffff" stroke-width="2"></path>
+                `; // Icône barrée
+            } else {
+                apiKeyInput.type = "password"; // Cache la clé API
+                eyeIcon.innerHTML = `
+                    <path d="M1 12C2.5 7 7 3.5 12 3.5C17 3.5 21.5 7 23 12C21.5 17 17 20.5 12 20.5C7 20.5 2.5 17 1 12Z" stroke="#ffffff" stroke-width="2"></path>
+                    <circle cx="12" cy="12" r="3" stroke="#ffffff" stroke-width="2"></circle>
+                `; // Icône ouverte
+            }
+        });
+
+
+        document.getElementById("togglepassword").addEventListener("click", function () {
+            const PasswordInput = document.getElementById("dbPassword");
+            const eyeIcon = document.getElementById("togglepassword");
+
+            if (PasswordInput.type === "password") {
+                PasswordInput.type = "text"; // Montre la clé API
+                eyeIcon.innerHTML = `
+                    <path d="M1 12C2.5 7 7 3.5 12 3.5C17 3.5 21.5 7 23 12C21.5 17 17 20.5 12 20.5C7 20.5 2.5 17 1 12Z" stroke="#ffffff" stroke-width="2"></path>
+                    <circle cx="12" cy="12" r="3" stroke="#ffffff" stroke-width="2"></circle>
+                    <path d="M3 3L21 21" stroke="#ffffff" stroke-width="2"></path>
+                `; // Icône barrée
+            } else {
+                PasswordInput.type = "password"; // Cache la clé API
+                eyeIcon.innerHTML = `
+                    <path d="M1 12C2.5 7 7 3.5 12 3.5C17 3.5 21.5 7 23 12C21.5 17 17 20.5 12 20.5C7 20.5 2.5 17 1 12Z" stroke="#ffffff" stroke-width="2"></path>
+                    <circle cx="12" cy="12" r="3" stroke="#ffffff" stroke-width="2"></circle>
+                `; // Icône ouverte
+            }
+        });
         function generateEnvFile() {
             const apiKey = document.getElementById('apiKey');
             const dbUser = document.getElementById('dbUser');
@@ -181,13 +350,14 @@
             // Réinitialisation des erreurs
             let isValid = true;
             document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('input').forEach(el => el.classList.remove('input-error'));
+            document.querySelectorAll('.input-container').forEach(el => el.classList.remove('input-error'));
 
-            // Fonction pour afficher un message d'erreur sous un champ
+            // Fonction pour afficher un message d'erreur sous un champ et ajouter la bordure rouge
             function showError(input, message) {
                 isValid = false;
-                input.classList.add('input-error');
-                const errorElement = input.nextElementSibling;
+                const inputContainer = input.parentElement; // Récupère le parent contenant l'input
+                inputContainer.classList.add('input-error'); // Ajoute la classe de bordure rouge
+                const errorElement = inputContainer.nextElementSibling; // L'erreur est sous le conteneur
                 errorElement.textContent = message;
                 errorElement.style.display = 'block';
             }
@@ -208,20 +378,19 @@
 
             // Si toutes les valeurs sont valides, on génère le fichier
             if (isValid) {
-                const envContent = `API_KEY=${apiKey.value}
-        DB_USER=${dbUser.value}
-        DB_PASSWORD=${dbPassword.value}
-        DB_HOST=${dbHost.value}`;
+                const envContent = `API_KEY=\"${apiKey.value}\"\nDB_USER=\"${dbUser.value}\"\nDB_PASSWORD=\"${dbPassword.value}\"\nDB_HOST=\"${dbHost.value}\"`;
 
                 const blob = new Blob([envContent], { type: 'text/plain' });
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = '.env';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                const formData = new FormData();
+                formData.append("env_file", blob, ".env");
+                try {
+                    sendFileToServer(formData.get("env_file"));
+                } catch (error) {
+                    console.error("Erreur lors de l'envoi du fichier : ", error);
+                }
             }
         }
+
 
         
 
@@ -307,6 +476,12 @@
             })
             .then(response => response.json())
             .then(data => {
+                mainContainer.classList.add("success-effect");
+                
+                // Supprime l'effet après 3 secondes
+                setTimeout(() => {
+                    mainContainer.classList.remove("success-effect");
+                }, 10000);
                 console.log(data.message);
                 document.getElementById('errorMessage').textContent = data.message;
             })

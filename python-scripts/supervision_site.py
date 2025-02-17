@@ -8,10 +8,15 @@ import docker
 import os
 import re
 from datetime import datetime
+from random import randint
 
 
 app = Flask(__name__)
 socketio = SocketIO(app)
+
+#UPLOAD_FOLDER = "uploads"
+#ENV_FILE_PATH = os.path.join(UPLOAD_FOLDER, ".env")
+ENV_FILE_PATH = ".env"
 
 log_history = []  # Historique des logs
 log_timestamp = []  # Liste des timestamps des logs
@@ -260,6 +265,24 @@ def upload_env():
     print("Fichier .env valide ✅")
     return jsonify({"message": "Fichier .env valide !"}), 200
 
+@app.route('/info-env', methods=['GET'])
+def info_env():
+    """ Route pour récupérer le contenu du fichier .env en JSON """
+    if not os.path.exists(ENV_FILE_PATH):
+        return jsonify({"error": "Fichier .env introuvable"}), 404
+
+    env_data = {}
+    # create random data for not leak the real data
+    with open(ENV_FILE_PATH, 'r', encoding="utf-8") as f:
+        lines = f.readlines()
+        for i, line in enumerate(lines):
+            key, value = line.strip().split("=")
+            if i == 0:
+                env_data[key] = "".join([chr(randint(65, 90)) for _ in range(15)])
+            else:
+                env_data[key] = "".join([chr(randint(65, 90)) for _ in range(randint(4, 8))])
+
+    return jsonify([env_data])  # Renvoie un tableau JSON contenant un objet
 
 def run_script():
     while True:
