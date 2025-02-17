@@ -6,6 +6,262 @@
     <title>Créer un fichier .env</title>
     <link rel="stylesheet" href="../static/style.css">
     <style>
+        @keyframes slideout {
+            0% { transform: translateX(0); opacity: 1; }
+            100% { transform: translateX(150%); opacity: 0; }
+        }
+
+        /* Conteneur des bandeaux (fixé en haut) */
+        .notifications-container {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        /* Styles généraux des bandeaux */
+        .notification-banner {
+            width: 320px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            background: #509AF8;
+            border-radius: 8px;
+            box-shadow: 0px 0px 5px -3px #111;
+            opacity: 1;
+            transition: opacity 0.5s ease-out, transform 0.3s ease-in-out;
+        }
+
+        /* Animation de disparition */
+        .notification-banner.slideout {
+            transform: translateX(150%);
+            opacity: 0;
+        }
+
+        /* Icône */
+        .notification-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+        }
+
+        /* Titre */
+        .notification-title {
+            font-weight: 500;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        /* Bouton de fermeture */
+        .notification-close {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin-left: auto;
+        }
+
+
+
+        /* Styles du bandeau d'information */
+        .info {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            width: 320px;
+            padding: 12px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: start;
+            background: #509AF8;
+            border-radius: 8px;
+            box-shadow: 0px 0px 5px -3px #111;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+        .info.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .info.slideout {
+            animation: slideout 0.8s forwards;
+        }
+        .info__icon {
+            width: 20px;
+            height: 20px;
+            transform: translateY(-2px);
+            margin-right: 8px;
+        }
+        .info__icon path {
+            fill: #fff;
+        }
+        .info__title {
+            font-weight: 500;
+            font-size: 14px;
+            color: #fff;
+        }
+        .info__close {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin-left: auto;
+        }
+        .info__close path {
+            fill: #fff;
+        }
+
+        /* Styles du bandeau de mise en garde (jaune) */
+        .warning {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            width: 320px;
+            padding: 12px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: start;
+            background: #FFC107;
+            border-radius: 8px;
+            box-shadow: 0px 0px 5px -3px #111;
+            position: fixed;
+            top: 60px; /* Décalé sous l'info */
+            right: 15px;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+        .warning.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .warning.slideout {
+            animation: slideout 0.8s forwards;
+        }
+        .warning__icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+        }
+        .warning__icon path {
+            fill: #fff;
+        }
+        .warning__title {
+            font-weight: 500;
+            font-size: 14px;
+            color: #fff;
+        }
+        .warning__close {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin-left: auto;
+        }
+        .warning__close path {
+            fill: #fff;
+        }
+
+        /* Styles du bandeau d'erreur (rouge) */
+        .error {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            width: 320px;
+            padding: 12px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: start;
+            background: #F44336;
+            border-radius: 8px;
+            box-shadow: 0px 0px 5px -3px #111;
+            position: fixed;
+            top: 105px; /* Décalé sous la mise en garde */
+            right: 15px;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+        .error.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .error.slideout {
+            animation: slideout 0.8s forwards;
+        }
+        .error__icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+        }
+        .error__icon path {
+            fill: #fff;
+        }
+        .error__title {
+            font-weight: 500;
+            font-size: 14px;
+            color: #fff;
+        }
+        .error__close {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin-left: auto;
+        }
+        .error__close path {
+            fill: #fff;
+        }
+
+        /* Styles du bandeau de validation (vert) */
+        .success {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            width: 320px;
+            padding: 12px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: start;
+            background: #4CAF50; /* Vert */
+            border-radius: 8px;
+            box-shadow: 0px 0px 5px -3px #111;
+            position: fixed;
+            top: 150px; /* Décalé sous le bandeau d'erreur */
+            right: 15px;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+        .success.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .success.slideout {
+            animation: slideout 0.8s forwards;
+        }
+        .success__icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+        }
+        .success__icon path {
+            fill: #fff;
+        }
+        .success__title {
+            font-weight: 500;
+            font-size: 14px;
+            color: #fff;
+        }
+        .success__close {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin-left: auto;
+        }
+        .success__close path {
+            fill: #fff;
+        }
+
         html, body {
             height: 100vh;
             margin: 0;
@@ -58,7 +314,6 @@
             cursor: pointer;
             border-radius: 4px;
             font-size: 16px;
-            margin-top: 10px;
         }
 
         button:hover {
@@ -116,20 +371,7 @@
             animation-iteration-count: 1;
         }
 
-        /* .input-container {
-            position: relative;
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #30363d;
-            border-radius: 4px;
-            background: #0d1117;
-            color: #c9d1d9;
-        } */
-
         .input-container {
-            position: relative;
             display: flex;
             align-items: center;
             width: 100%;
@@ -138,10 +380,11 @@
             border: 1px solid #30363d;
             border-radius: 4px;
             padding: 5px;
+            position: relative;
         }
 
         .input-container input {
-            flex: 1;
+            flex-grow: 1; /* Permet à l'input de prendre tout l'espace disponible */
             background: transparent;
             border: none;
             padding: 10px;
@@ -163,8 +406,8 @@
         }
 
         .eye-icon {
-            position: absolute;
-            right: 10px;
+            flex-shrink: 0; /* Empêche l'icône de se tasser */
+            margin-left: 5px; /* Ajoute un petit espace entre le bouton et l'œil */
             cursor: pointer;
             width: 24px;
             height: 24px;
@@ -176,6 +419,80 @@
             opacity: 0.7;
         }
 
+        .input-container button {
+            flex-shrink: 0; /* Empêche le bouton "Key" de se réduire */
+            margin-left: 5px; /* Ajoute un léger espace entre l'input et le bouton */
+        }
+
+        .button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 5px;
+            height: 30px;
+            width: 80px;
+            border: none;
+            background: #a549dacb;
+            border-radius: 20px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .lable {
+            line-height: 20px;
+            font-size: 17px;
+            color: #fff;
+            font-family: sans-serif;
+            letter-spacing: 1px;
+        }
+
+        .svg-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .button:hover {
+            background: #A649DA;
+        }
+
+        .button:hover .svg-icon {
+            animation: rot 0.5s linear infinite;
+        }
+
+        @keyframes rot {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(-6deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(6deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            font-size: 14px;
+            border-radius: 5px;
+            display: none;
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
+        }
 
         .error-message {
             color: red;
@@ -209,18 +526,36 @@
             </nav>
         </div>
     </header>
+    <!-- Conteneur des notifications -->
+    <div class="notifications-container" id="notificationsContainer">
+        <!-- Les notifications seront ajoutées ici dynamiquement -->
+    </div>
+
     <main class="container" id="mainContainer">
         <h1>Create or modify .env file</h1>
         <form id="envForm">
             <label for="apiKey">API key:</label>
             <div class="input-container">
                 <input type="password" id="apiKey" name="API_KEY" required>
+
+                <!-- Button Key -->
+                <button class="button" id="infoButton">
+                    <svg class="svg-icon" fill="none" height="10" viewBox="0 0 20 20" width="5" xmlns="http://www.w3.org/2000/svg">
+                        <path clip-rule="evenodd" d="m9.99998 4.16667c1.38072 0 2.50002 1.11929 2.50002 2.5 0 .85577-.4293 1.6115-1.088 2.06341l-.4536.31125.1079.53934 1.2505 6.25263h-4.63366l1.25051-6.25263.10791-.53934-.45358-.31125c-.65876-.45191-1.088-1.20764-1.088-2.06341 0-1.38071 1.11925-2.5 2.5-2.5zm-2.31684 11.66663-.19934.9968-.81715-.1634v-.8334zm5.65016.8334v-.8334h-1.0165l.1993.9968zm.8172-.1634.1993.9967h-1.0165-6.66665-1.0165l.19935-.9967 1.35023-6.75127c.14013.12727.28892.24506.44536.35237l.47144-.68715-.81716-.16342-.09964.4982c-.83832-.76139-1.36642-1.86163-1.36642-3.08536 0-2.30119 1.86549-4.16667 4.16667-4.16667 2.30112 0 4.16662 1.86548 4.16662 4.16667 0 1.22374-.5281 2.32399-1.3664 3.08538l-.0996-.49822-.8172.16342-.4714-.68717.4714.68717-.8171.16342.8171-.16342.4715.68715c.1564-.1073.3052-.22509.4453-.35235z" fill="#fff" fill-rule="evenodd"></path>
+                    </svg>
+                    <span class="lable">Key</span>
+                </button>
+
+                <!-- Eye Icon -->
                 <svg id="toggleApiKey" class="eye-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M1 12C2.5 7 7 3.5 12 3.5C17 3.5 21.5 7 23 12C21.5 17 17 20.5 12 20.5C7 20.5 2.5 17 1 12Z" stroke="#ffffff" stroke-width="2"></path>
                     <circle cx="12" cy="12" r="3" stroke="#ffffff" stroke-width="2"></circle>
                 </svg>
+
+                <div class="tooltip" id="tooltip">La clé API demandée est une clé Security Trail, elle est nécessaire pour le bon fonctionnement du programme.</div>
             </div>
             <p class="error-message"></p>
+
 
 
             <label for="dbUser">Username:</label>
@@ -245,7 +580,7 @@
             </div>
             <p class="error-message"></p>
 
-            <button type="button" onclick="generateEnvFile()"><p class="button_title">Generate</p></button>
+            <button style="margin-top: 10px;" type="button" onclick="generateEnvFile()"><p class="button_title">Generate</p></button>
         </form>
         <input type="file" id="fileInput" class="hidden-file-input" accept=".env">
         <div class="env-box" id="dropZone" onclick="document.getElementById('fileInput').click();">
@@ -266,10 +601,107 @@
         </div>
     </main>
     <script>
+        
+        document.getElementById("infoButton").addEventListener("click", function (event) {
+            event.preventDefault(); // Empêche un éventuel comportement inattendu
+
+            const tooltip = document.getElementById("tooltip");
+
+            if (tooltip.style.display === "block") {
+                tooltip.style.display = "none"; // Cache si déjà affiché
+            } else {
+                tooltip.style.display = "block"; // Affiche la bulle
+                setTimeout(() => {
+                    tooltip.style.display = "none"; // La cache après 3 secondes
+                }, 3000);
+            }
+        });
+
+
+        function createNotification(type, message) {
+            const container = document.getElementById("notificationsContainer");
+
+            // Création de l'élément du bandeau
+            const notification = document.createElement("div");
+            notification.classList.add("notification-banner");
+
+            // Définition du style en fonction du type (info, warning, error, success)
+            switch (type) {
+                case "info":
+                    notification.style.background = "#509AF8"; // Bleu
+                    break;
+                case "warning":
+                    notification.style.background = "#F4C430"; // Jaune
+                    break;
+                case "error":
+                    notification.style.background = "#E74C3C"; // Rouge
+                    break;
+                case "success":
+                    notification.style.background = "#4CAF50"; // Vert
+                    break;
+            }
+
+            // Icône en fonction du type (mis à jour avec tes SVG)
+            let iconSVG;
+            if (type === "success") {
+                iconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                            <path fill="#ffffff" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"/>
+                        </svg>`;
+            } else if (type === "error") {
+                iconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                            <path fill="#ffffff" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zm0-384c13.3 0 24 10.7 24 24l0 112c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-112c0-13.3 10.7-24 24-24zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"/>
+                        </svg>`;
+            } else if (type === "warning") {
+                iconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                            <path fill="#ffffff" d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480L40 480c-14.3 0-27.6-7.7-34.7-20.1s-7-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24l0 112c0 13.3 10.7 24 24 24s24-10.7 24-24l0-112c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"/>
+                        </svg>`;
+            } else {
+                iconSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path fill="#ffffff" d="M12 2.25C6.20156 2.25 1.5 6.95156 1.5 12.75C1.5 18.5484 6.20156 23.25 12 23.25C17.7984 23.25 22.5 18.5484 22.5 12.75C22.5 6.95156 17.7984 2.25 12 2.25ZM10.5 17.25L5.625 12.375L7.125 10.875L10.5 14.25L16.875 7.875L18.375 9.375L10.5 17.25Z"></path>
+                        </svg>`;
+            }
+
+            // Contenu du bandeau
+            notification.innerHTML = `
+                <div class="notification-icon">${iconSVG}</div>
+                <div class="notification-title">${message}</div>
+                <div class="notification-close" onclick="removeNotification(this)">
+                    <svg height="20" width="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="m15.8333 5.34166-1.175-1.175-4.6583 4.65834-4.65833-4.65834-1.175 1.175 4.65833 4.65834-4.65833 4.6583 1.175 1.175 4.65833-4.6583 4.6583 4.6583 1.175-1.175-4.6583-4.6583z" fill="#ffffff"></path>
+                    </svg>
+                </div>
+            `;
+
+            // Ajout du bandeau en haut de la pile
+            container.insertBefore(notification, container.firstChild);
+        }
+
+        // Fonction pour supprimer un bandeau et faire remonter les autres
+        function removeNotification(closeButton) {
+            const notification = closeButton.parentElement;
+            notification.classList.add("slideout");
+
+            // Supprime le bandeau après l'animation
+            setTimeout(() => {
+                notification.remove();
+            }, 500);
+        }
+
+        // Gestion du bandeau d'information
+        document.addEventListener("DOMContentLoaded", function () {
+            const infoBanner = document.getElementById("infoBanner");
+            const closeBanner = document.getElementById("closeBanner");
+
+            setTimeout(() => { infoBanner.classList.add("slideout");}, 10000);
+
+            closeBanner.addEventListener("click", () => {infoBanner.classList.add("slideout");});
+        });
+
         document.addEventListener("DOMContentLoaded", function () {
             fetch("/info-env")
                 .then(response => {
                     if (!response.ok) {
+                        createNotification("warning", "Aucun fichier .env trouvé, veuillez en créer un.");
                         throw new Error("Fichier .env introuvable");
                     }
                     return response.json();
@@ -318,26 +750,28 @@
             }
         });
 
-
         document.getElementById("togglepassword").addEventListener("click", function () {
-            const PasswordInput = document.getElementById("dbPassword");
+            const passwordInput = document.getElementById("dbPassword");
             const eyeIcon = document.getElementById("togglepassword");
 
-            if (PasswordInput.type === "password") {
-                PasswordInput.type = "text"; // Montre la clé API
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text"; // Affiche le mot de passe
                 eyeIcon.innerHTML = `
                     <path d="M1 12C2.5 7 7 3.5 12 3.5C17 3.5 21.5 7 23 12C21.5 17 17 20.5 12 20.5C7 20.5 2.5 17 1 12Z" stroke="#ffffff" stroke-width="2"></path>
                     <circle cx="12" cy="12" r="3" stroke="#ffffff" stroke-width="2"></circle>
-                    <path d="M3 3L21 21" stroke="#ffffff" stroke-width="2"></path>
+                    <line x1="3" y1="3" x2="21" y2="21" stroke="#ffffff" stroke-width="2"></line>
                 `; // Icône barrée
             } else {
-                PasswordInput.type = "password"; // Cache la clé API
+                passwordInput.type = "password"; // Cache le mot de passe
                 eyeIcon.innerHTML = `
                     <path d="M1 12C2.5 7 7 3.5 12 3.5C17 3.5 21.5 7 23 12C21.5 17 17 20.5 12 20.5C7 20.5 2.5 17 1 12Z" stroke="#ffffff" stroke-width="2"></path>
                     <circle cx="12" cy="12" r="3" stroke="#ffffff" stroke-width="2"></circle>
                 `; // Icône ouverte
             }
         });
+
+
+
         function generateEnvFile() {
             const apiKey = document.getElementById('apiKey');
             const dbUser = document.getElementById('dbUser');
@@ -365,15 +799,19 @@
             // Vérification des champs avec regex et présence
             if (apiKey.value.trim() === "" || !validRegex.test(apiKey.value)) {
                 showError(apiKey, "Seuls les caractères alphanumériques et spéciaux classiques sont autorisés.");
+                createNotification("error", "Une erreur s'est produite lors de la validation du champ API Key.");
             }
             if (dbUser.value.trim() === "" || !validRegex.test(dbUser.value)) {
                 showError(dbUser, "Seuls les caractères alphanumériques et spéciaux classiques sont autorisés.");
+                createNotification("error", "Une erreur s'est produite lors de la validation du champ Username.");
             }
             if (dbPassword.value.trim() === "" || !validRegex.test(dbPassword.value)) {
                 showError(dbPassword, "Seuls les caractères alphanumériques et spéciaux classiques sont autorisés.");
+                createNotification("error", "Une erreur s'est produite lors de la validation du champ Password.");
             }
             if (dbHost.value.trim() === "" || !validRegex.test(dbHost.value)) {
                 showError(dbHost, "Seuls les caractères alphanumériques et spéciaux classiques sont autorisés.");
+                createNotification("error", "Une erreur s'est produite lors de la validation du champ Host.");
             }
 
             // Si toutes les valeurs sont valides, on génère le fichier
@@ -384,7 +822,9 @@
                 const formData = new FormData();
                 formData.append("env_file", blob, ".env");
                 try {
+                    createNotification("info", "Envoi du fichier .env en cours...");
                     sendFileToServer(formData.get("env_file"));
+                    createNotification("success", "Fichier .env généré avec succès !");
                 } catch (error) {
                     console.error("Erreur lors de l'envoi du fichier : ", error);
                 }
@@ -402,6 +842,7 @@
             
             if (!file) {
                 console.error("Aucun fichier fourni à validateEnvFile !");
+                createNotification("error", "Aucun fichier fourni à validateEnvFile !");
                 return;
             }
 
@@ -416,6 +857,7 @@
                     errorMessage.style.color = "red";
                     fileStatusIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="red" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="red" stroke-width="2" fill="none" /><line x1="8" y1="8" x2="16" y2="16" stroke="red" stroke-width="2" /><line x1="16" y1="8" x2="8" y2="16" stroke="red" stroke-width="2" /></svg>';
                     errorMessage.textContent = "Le fichier doit contenir exactement 4 lignes.";
+                    createNotification("error", "Le fichier ne convient pas aux éxigences.");
                     return;
                 }
                 const regex = /^[a-zA-Z0-9\s\-_,.=@"]+$/;
@@ -425,18 +867,21 @@
                         errorMessage.style.color = "red";
                         fileStatusIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="red" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="red" stroke-width="2" fill="none" /><line x1="8" y1="8" x2="16" y2="16" stroke="red" stroke-width="2" /><line x1="16" y1="8" x2="8" y2="16" stroke="red" stroke-width="2" /></svg>';
                         errorMessage.textContent = "Format incorrect à la ligne " + (i + 1) + " erreur 1";
+                        createNotification("error", "Le fichier ne convient pas aux éxigences.");
                         return;
                     }
                     if (lines[i].length > 200){
                         errorMessage.style.color = "red";
                         fileStatusIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="red" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="red" stroke-width="2" fill="none" /><line x1="8" y1="8" x2="16" y2="16" stroke="red" stroke-width="2" /><line x1="16" y1="8" x2="8" y2="16" stroke="red" stroke-width="2" /></svg>';
                         errorMessage.textContent = "Format incorrect à la ligne " + (i + 1) + " erreur 2";
+                        createNotification("error", "Le fichier ne convient pas aux éxigences.");
                         return;
                     }
                     if (!regex.test(lines[i].substring(expectedKeys[i].length))) {
                         errorMessage.style.color = "red";
                         fileStatusIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="red" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="red" stroke-width="2" fill="none" /><line x1="8" y1="8" x2="16" y2="16" stroke="red" stroke-width="2" /><line x1="16" y1="8" x2="8" y2="16" stroke="red" stroke-width="2" /></svg>';
                         errorMessage.textContent = "Format incorrect à la ligne " + (i + 1) + " erreur 3";
+                        createNotification("error", "Le fichier ne convient pas aux éxigences.");
                         return;
                     }
                 }
@@ -444,6 +889,7 @@
                 fileStatusIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="green" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="green" stroke-width="2" fill="none" /><path d="M8 12l3 3l5 -5" stroke="green" stroke-width="2" fill="none" /></svg>';
                 errorMessage.textContent = "Fichier .env valide !";
                 errorMessage.style.color = "green";
+                createNotification("success", "Le fichier .env est valide !");
             };
             reader.readAsText(file);
         }
@@ -510,6 +956,35 @@
             if (file) {
                 validateEnvFile(file);
             }
+        });
+
+        
+        document.getElementById("closeBanner").addEventListener("click", function () {
+            document.getElementById("infoBanner").classList.add("slideout");
+            setTimeout(() => {
+                document.getElementById("infoBanner").classList.add("hidden");
+            }, 800);
+        });
+
+        document.getElementById("closeWarning").addEventListener("click", function () {
+            document.getElementById("warningBanner").classList.add("slideout");
+            setTimeout(() => {
+                document.getElementById("warningBanner").classList.add("hidden");
+            }, 800);
+        });
+
+        document.getElementById("closeError").addEventListener("click", function () {
+            document.getElementById("errorBanner").classList.add("slideout");
+            setTimeout(() => {
+                document.getElementById("errorBanner").classList.add("hidden");
+            }, 800);
+        });
+
+        document.getElementById("closeSuccess").addEventListener("click", function () {
+            document.getElementById("successBanner").classList.add("slideout");
+            setTimeout(() => {
+                document.getElementById("successBanner").classList.add("hidden");
+            }, 800);
         });
 
     </script>
