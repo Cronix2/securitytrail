@@ -14,18 +14,27 @@ from random import randint
 app = Flask(__name__)
 socketio = SocketIO(app)
 
-#UPLOAD_FOLDER = "uploads"
-#ENV_FILE_PATH = os.path.join(UPLOAD_FOLDER, ".env")
 ENV_FILE_PATH = ".env"
 
 log_history = []  # Historique des logs
 log_timestamp = []  # Liste des timestamps des logs
+last_minute_timestamp = None  # Stocke le dernier timestamp utilisé pour logs_per_minute
+last_hour_timestamp = None  # Stocke le dernier timestamp utilisé pour logs_per_hour
+last_day_timestamp = None  # Stocke le dernier timestamp utilisé pour logs_per_day
+last_week_timestamp = None  # Stocke le dernier timestamp utilisé pour logs_per_week
+last_month_timestamp = None  # Stocke le dernier timestamp utilisé pour logs_per_month
+
+# Stockage des logs et moyennes
+# Stockage des logs et moyennes
+log_entries = []  # Stocke chaque log avec son timestamp
 log_count = 0  # Compteur total de logs
-logs_per_minutes = 0  # Logs par minute
-logs_per_minute = []  # Moyenne des logs par minute (max 60 éléments)
-log_average_per_hour = []  # Moyenne des logs par heure (max 24 éléments)
-log_average_per_day = []  # Moyenne des logs par jour (max 30 éléments)
-log_average_per_day_total = []  # Moyenne des logs par jour sans limite
+logs_per_second = []  # Dernières 60 secondes
+logs_per_minute = []  # Dernières 60 minutes
+logs_per_hour = []  # Dernières 24 heures
+logs_per_day = []  # Derniers 7 jours
+logs_per_week = []  # Dernières 4 semaines
+logs_per_month = []  # Derniers 12 mois
+
 
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -106,7 +115,7 @@ class StreamToSocketIO:
         if message.strip():  # Évite les lignes vides
             socketio.emit('log', message.strip())
             log_history.append(str(message.strip()))
-            log_count += 1
+            add_log()
             current_time = time.time()
             log_timestamp.append(current_time)
             log_timestamp = [t for t in log_timestamp if t > current_time - 60]  # Conserve les logs des 60 dernières secondes
@@ -115,6 +124,70 @@ class StreamToSocketIO:
         pass  # Évite les erreurs avec stdout
 
 sys.stdout = StreamToSocketIO()  # Redirige print() vers WebSocket
+
+# Fonction d'ajout et de gestion des limites
+def update_log_storage(log_list, new_value, max_size):
+    if len(log_list) >= max_size:
+        log_list.pop(0)  # Supprime la plus ancienne valeur
+    log_list.append(new_value)  # Ajoute la nouvelle valeur
+
+
+# Fonction d'ajout et de gestion des limites
+def update_log_averages():
+    global logs_per_second, logs_per_minute, logs_per_hour, logs_per_day, logs_per_week, logs_per_month
+    global last_minute_timestamp, last_hour_timestamp, last_day_timestamp, last_week_timestamp, last_month_timestamp
+
+    current_time = time.time()
+    timestamp_str = datetime.fromtimestamp(current_time).strftime('%Y/%m/%d-%H:%M:%S')
+
+    # Logs/sec : Comptage des logs dans la dernière seconde
+    logs_per_second_value = len([t for t in log_entries if current_time - t < 1])
+    update_log_storage(logs_per_second, [logs_per_second_value, timestamp_str], 60)
+
+    # 🌟 Vérifie si **exactement 60 secondes** se sont écoulées pour logs_per_minute
+    current_minute = datetime.fromtimestamp(current_time).strftime('%Y-%m-%d %H:%M')
+    if len(logs_per_second) == 60 and last_minute_timestamp != current_minute:
+        logs_per_minute_value = round(sum(l[0] for l in logs_per_second) / 60, 2)
+        update_log_storage(logs_per_minute, [logs_per_minute_value, timestamp_str], 60)
+        last_minute_timestamp = current_minute  # Met à jour le dernier timestamp
+
+    # 🌟 Vérifie si **exactement 60 minutes** se sont écoulées pour logs_per_hour
+    current_hour = datetime.fromtimestamp(current_time).strftime('%Y-%m-%d %H')
+    if len(logs_per_minute) == 60 and last_hour_timestamp != current_hour:
+        logs_per_hour_value = round(sum(l[0] for l in logs_per_minute) / 60, 2)
+        update_log_storage(logs_per_hour, [logs_per_hour_value, timestamp_str], 24)
+        last_hour_timestamp = current_hour  # Met à jour le dernier timestamp
+
+    # 🌟 Vérifie si **exactement 24 heures** se sont écoulées pour logs_per_day
+    current_day = datetime.fromtimestamp(current_time).strftime('%Y-%m-%d')
+    if len(logs_per_hour) == 24 and last_day_timestamp != current_day:
+        logs_per_day_value = round(sum(l[0] for l in logs_per_hour) / 24, 2)
+        update_log_storage(logs_per_day, [logs_per_day_value, timestamp_str], 7)
+        last_day_timestamp = current_day  # Met à jour le dernier timestamp
+
+    # 🌟 Vérifie si **exactement 7 jours** se sont écoulés pour logs_per_week
+    current_week = datetime.fromtimestamp(current_time).strftime('%Y-W%W')  # Format YYYY-WW (semaine de l'année)
+    if len(logs_per_day) == 7 and last_week_timestamp != current_week:
+        logs_per_week_value = round(sum(l[0] for l in logs_per_day) / 7, 2)
+        update_log_storage(logs_per_week, [logs_per_week_value, timestamp_str], 4)
+        last_week_timestamp = current_week  # Met à jour le dernier timestamp
+
+    # 🌟 Vérifie si **exactement 4 semaines** se sont écoulées pour logs_per_month
+    current_month = datetime.fromtimestamp(current_time).strftime('%Y-%m')  # Format YYYY-MM
+    if len(logs_per_week) == 4 and last_month_timestamp != current_month:
+        logs_per_month_value = round(sum(l[0] for l in logs_per_week) / 4, 2)
+        update_log_storage(logs_per_month, [logs_per_month_value, timestamp_str], 12)
+        last_month_timestamp = current_month  # Met à jour le dernier timestamp
+
+
+
+# Fonction d'ajout d'un log
+def add_log():
+    global log_count
+    current_time = time.time()
+    log_entries.append(current_time)
+    log_count += 1
+    update_log_averages()
 
 @app.route('/')
 def index():
@@ -126,49 +199,14 @@ def stats():
 
 @app.route('/stats-data')
 def get_stats():
-    global log_timestamp, log_count, logs_per_minute, log_average_per_hour, log_average_per_day, log_average_per_day_total
-    
-    current_time = time.time()
-    current_time_str = datetime.fromtimestamp(current_time).strftime('%Y-%m-%d-%H-%M-%S')
-
-    # Nettoyage des logs des 60 dernières secondes
-    log_timestamp = [t for t in log_timestamp if current_time - t < 60]
-    logs_per_minute_value = len(log_timestamp)
-
-    # the average of logs per minute
-    logs_per_minutes = logs_per_minute_value
-
-    # Gestion de la liste logs_per_minute (max 60 éléments)
-    if len(logs_per_minute) >= 60:
-        logs_per_minute.pop(0)
-    logs_per_minute.append([logs_per_minute_value, current_time_str])
-
-    # Calcul de la moyenne des logs par heure
-    log_average_per_hour_value = round(sum(l[0] for l in logs_per_minute) / len(logs_per_minute), 1) if logs_per_minute else 0
-
-    # Gestion de la liste log_average_per_hour (max 24 éléments)
-    if len(log_average_per_hour) >= 24:
-        log_average_per_hour.pop(0)
-    log_average_per_hour.append([log_average_per_hour_value, current_time_str])
-
-    # Calcul de la moyenne des logs par jour
-    log_average_per_day_value = round(sum(l[0] for l in log_average_per_hour) / len(log_average_per_hour), 1) if log_average_per_hour else 0
-
-    # Gestion de la liste log_average_per_day (max 30 éléments)
-    if len(log_average_per_day) >= 30:
-        log_average_per_day.pop(0)
-    log_average_per_day.append([log_average_per_day_value, current_time_str])
-
-    # Ajout de la moyenne journalière dans log_average_per_day_total (sans limite)
-    log_average_per_day_total.append([log_average_per_day_value, current_time_str])
-
     return jsonify({
         "total_logs": log_count,
-        "logs_per_minutes": logs_per_minutes,
+        "logs_per_second": logs_per_second,
         "logs_per_minute": logs_per_minute,
-        "log_average_per_hour": log_average_per_hour,
-        "log_average_per_day": log_average_per_day,
-        "log_average_per_day_total": log_average_per_day_total
+        "log_average_per_hour": logs_per_hour,
+        "log_average_per_day": logs_per_day,
+        "log_average_per_week": logs_per_week,
+        "log_average_per_month": logs_per_month
     })
 
 @app.route('/history')
