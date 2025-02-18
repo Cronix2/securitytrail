@@ -266,7 +266,30 @@
 
         document.getElementById("scaleSelector").addEventListener("change", function() {
             selectedMetric = this.value;
-            document.getElementById("currentScale").textContent = scaleTextMap[selectedMetric] || "Échelle : Inconnue";
+            // Mise à jour de l'affichage de l'échelle sélectionnée
+            let scaleText = "Échelle : ";
+            switch (selectedMetric) {
+                case "logs_per_second":
+                    scaleText += "Par seconde";
+                    break;
+                case "logs_per_minute":
+                    scaleText += "Par minute";
+                    break;
+                case "log_average_per_hour":
+                    scaleText += "Par heure";
+                    break;
+                case "log_average_per_day":
+                    scaleText += "Par jour";
+                    break;
+                case "log_average_per_week":
+                    scaleText += "Par semaine";
+                    break;
+                case "log_average_per_month":
+                    scaleText += "Par mois";
+                    break;
+            }
+            document.getElementById("currentScale").textContent = scaleText;
+
             updateChart();
         });
 
@@ -313,8 +336,8 @@
         }
 
         // Rafraîchissement automatique du graphique toutes les secondes
-        setInterval(updateStats, 1000);
-        setInterval(updateChart, 1000);
+        setInterval(updateStats, 10000);
+        setInterval(updateChart, 10000);
         document.addEventListener("DOMContentLoaded", () => {
             updateStats();
             updateChart();
@@ -367,7 +390,7 @@
                 .catch(error => console.error('Erreur lors du chargement du health check:', error));
         }
 
-        setInterval(updateHealthCheck, 1000); // Rafraîchir toutes les 10 secondes
+        setInterval(updateHealthCheck, 1000); // Rafraîchir toutes les secondes
         document.addEventListener("DOMContentLoaded", updateHealthCheck);
     </script>
 </body>
