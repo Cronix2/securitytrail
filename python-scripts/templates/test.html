@@ -266,8 +266,21 @@
 
         document.getElementById("scaleSelector").addEventListener("change", function() {
             selectedMetric = this.value;
+            document.getElementById("currentScale").textContent = scaleTextMap[selectedMetric] || "Échelle : Inconnue";
             updateChart();
         });
+
+        function updateStats() {
+            fetch('/stats-data')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("totalLogs").textContent = data.total_logs || 0;
+                    let latestLogsPerMinute = data.logs_per_minute.length > 0 ? data.logs_per_minute[data.logs_per_minute.length - 1][0] : 0;
+                    document.getElementById("logsPerMinute").textContent = latestLogsPerMinute || 0;
+                })
+                .catch(error => console.error('Error fetching stats:', error));
+        }
+
 
         function updateChart() {
             fetch('/stats-data')
@@ -275,11 +288,22 @@
                 .then(data => {
                     logChartData.length = 0;
                     timeLabels.length = 0;
-
                     if (data[selectedMetric]) {
                         data[selectedMetric].forEach(entry => {
-                            logChartData.push(entry[0] || 0);
-                            timeLabels.push(entry[1]);
+                            let value = entry[0] || 0; // Si la valeur est absente, on met 0
+                            let timestamp = entry[1];
+                            // Formatage du timestamp en fonction de l'échelle sélectionnée
+                            // Pour les échelles inférieures aux minutes, on affiche HH:MM:SS
+                            // Pour les échelles inférieures ou égal aux heures on utilise le format HH:MM
+                            // Pour les échelles supérieures aux heures, on utilise le format JJ/MM/AAAA
+                            let formattedTime = selectedMetric === "logs_per_second" ? new Date(timestamp).toLocaleTimeString() :
+                                selectedMetric === "logs_per_minute" ? new Date(timestamp).toLocaleTimeString().slice(0, 5) :
+                                    selectedMetric === "log_average_per_hour" ? new Date(timestamp).toLocaleTimeString().slice(0, 5) :
+                                        new Date(timestamp).toLocaleDateString();
+
+
+                            logChartData.push(value);
+                            timeLabels.push(formattedTime);
                         });
                     }
 
@@ -288,10 +312,13 @@
                 .catch(error => console.error('Error updating chart:', error));
         }
 
+        // Rafraîchissement automatique du graphique toutes les secondes
+        setInterval(updateStats, 1000);
         setInterval(updateChart, 1000);
-        document.addEventListener("DOMContentLoaded", updateChart);
-
-
+        document.addEventListener("DOMContentLoaded", () => {
+            updateStats();
+            updateChart();
+        });
 
         // Gestion du bandeau d'information
         document.addEventListener("DOMContentLoaded", function () {

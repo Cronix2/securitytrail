@@ -144,38 +144,38 @@ def update_log_averages():
     logs_per_second_value = len([t for t in log_entries if current_time - t < 1])
     update_log_storage(logs_per_second, [logs_per_second_value, timestamp_str], 60)
 
-    # 🌟 Vérifie si **exactement 60 secondes** se sont écoulées pour logs_per_minute
+    # * Vérifie si **exactement 60 secondes** se sont écoulées pour logs_per_minute
     current_minute = datetime.fromtimestamp(current_time).strftime('%Y-%m-%d %H:%M')
     if len(logs_per_second) == 60 and last_minute_timestamp != current_minute:
-        logs_per_minute_value = round(sum(l[0] for l in logs_per_second) / 60, 2)
+        logs_per_minute_value = round(sum(l[0] for l in logs_per_second), 2)
         update_log_storage(logs_per_minute, [logs_per_minute_value, timestamp_str], 60)
         last_minute_timestamp = current_minute  # Met à jour le dernier timestamp
 
-    # 🌟 Vérifie si **exactement 60 minutes** se sont écoulées pour logs_per_hour
+    # * Vérifie si **exactement 60 minutes** se sont écoulées pour logs_per_hour
     current_hour = datetime.fromtimestamp(current_time).strftime('%Y-%m-%d %H')
     if len(logs_per_minute) == 60 and last_hour_timestamp != current_hour:
-        logs_per_hour_value = round(sum(l[0] for l in logs_per_minute) / 60, 2)
+        logs_per_hour_value = round(sum(l[0] for l in logs_per_minute), 2)
         update_log_storage(logs_per_hour, [logs_per_hour_value, timestamp_str], 24)
         last_hour_timestamp = current_hour  # Met à jour le dernier timestamp
 
-    # 🌟 Vérifie si **exactement 24 heures** se sont écoulées pour logs_per_day
+    # * Vérifie si **exactement 24 heures** se sont écoulées pour logs_per_day
     current_day = datetime.fromtimestamp(current_time).strftime('%Y-%m-%d')
     if len(logs_per_hour) == 24 and last_day_timestamp != current_day:
-        logs_per_day_value = round(sum(l[0] for l in logs_per_hour) / 24, 2)
+        logs_per_day_value = round(sum(l[0] for l in logs_per_hour), 2)
         update_log_storage(logs_per_day, [logs_per_day_value, timestamp_str], 7)
         last_day_timestamp = current_day  # Met à jour le dernier timestamp
 
-    # 🌟 Vérifie si **exactement 7 jours** se sont écoulés pour logs_per_week
+    # * Vérifie si **exactement 7 jours** se sont écoulés pour logs_per_week
     current_week = datetime.fromtimestamp(current_time).strftime('%Y-W%W')  # Format YYYY-WW (semaine de l'année)
     if len(logs_per_day) == 7 and last_week_timestamp != current_week:
-        logs_per_week_value = round(sum(l[0] for l in logs_per_day) / 7, 2)
+        logs_per_week_value = round(sum(l[0] for l in logs_per_day), 2)
         update_log_storage(logs_per_week, [logs_per_week_value, timestamp_str], 4)
         last_week_timestamp = current_week  # Met à jour le dernier timestamp
 
-    # 🌟 Vérifie si **exactement 4 semaines** se sont écoulées pour logs_per_month
+    # * Vérifie si **exactement 4 semaines** se sont écoulées pour logs_per_month
     current_month = datetime.fromtimestamp(current_time).strftime('%Y-%m')  # Format YYYY-MM
     if len(logs_per_week) == 4 and last_month_timestamp != current_month:
-        logs_per_month_value = round(sum(l[0] for l in logs_per_week) / 4, 2)
+        logs_per_month_value = round(sum(l[0] for l in logs_per_week), 2)
         update_log_storage(logs_per_month, [logs_per_month_value, timestamp_str], 12)
         last_month_timestamp = current_month  # Met à jour le dernier timestamp
 
