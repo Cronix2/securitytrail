@@ -3,83 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log Viewer - Acme Inc</title>
-    <link rel="stylesheet" href="../static/style.css">
+    <title>Log Viewer - Subdomain finder</title>
+    <link rel="icon" href="../static/icon/page.ico" type="image/x-icon">
+    <link rel="stylesheet" href="../static/CSS/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>     
-    <style>
-        /* Styles généraux */
-        body {
-            background: #121212;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
-        }
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-        }
-        .log-container {
-            background: #1e1e1e;
-            padding: 15px;
-            height: 300px;
-            overflow-y: auto;
-            border-radius: 10px;
-            border: 1px solid #333;
-        }
-        .log-entry {
-            padding: 8px 0;
-            border-bottom: 1px solid #333;
-        }
-        .log-user {
-            font-weight: bold;
-            color: #f39c12;
-        }
-        .log-separator {
-            font-weight: bold;
-            color: #00ff00;
-        }
-        .log-time {
-            font-weight: bold;
-            color: #3498db;
-        }
-        .log-msg {
-            color: #ffffff;
-            margin-left: 1rem;
-        }
-        .actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .btn {
-            background: #333;
-            color: #ffffff;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .btn:hover {
-            background: #444;
-        }
-        /* Scrollbar personnalisée en thème sombre */
-        .log-container::-webkit-scrollbar {
-            width: 8px; /* Épaisseur de la scrollbar */
-        }
-        .log-container::-webkit-scrollbar-track {
-            background: #1e1e1e; /* Fond du track */
-            border-radius: 10px;
-        }
-        .log-container::-webkit-scrollbar-thumb {
-            background: #444; /* Couleur du slider */
-            border-radius: 10px;
-            transition: background 0.3s ease;
-        }
-        .log-container::-webkit-scrollbar-thumb:hover {
-            background: #666; /* Couleur au survol */
-        }
-
-    </style>
+    <link rel="stylesheet" href="../static/CSS/index.css">
 </head>
 <body>
     <header class="navbar">
@@ -106,33 +34,6 @@
             <button class="btn" id="clearLogs">Clear</button>
         </div>
     </main>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            var socket = io();
-            var logContainer = document.getElementById("logContainer");
-
-            socket.on('log', function(msg) {
-                var logEntry = document.createElement("div");
-                logEntry.className = 'log-entry';
-                var timestamp = new Date().toISOString().replace('T', '/').split('.')[0];
-                logEntry.innerHTML = `<span class='log-user'>root</span><span class='log-separator'>@</span><span class='log-time'>${timestamp}</span> <span class='log-msg'>${msg}</span>`;
-                logContainer.appendChild(logEntry);
-                scrollToBottom();
-            });
-        });
-
-        function scrollToBottom() {
-            var logContainer = document.getElementById("logContainer");
-            logContainer.scrollTop = logContainer.scrollHeight;
-        }
-
-        function clearLogs() {
-            document.getElementById("logContainer").innerHTML = "";
-        }
-
-        document.getElementById("scrollBottom").addEventListener("click", scrollToBottom);
-        document.getElementById("clearLogs").addEventListener("click", clearLogs);
-    </script>
+    <script src="../static/JS/index.js"></script>
 </body>
 </html>

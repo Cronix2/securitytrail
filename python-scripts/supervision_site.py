@@ -301,6 +301,10 @@ def upload_env():
             return jsonify({"message": f"Erreur format à la ligne {i+1}"}), 400
 
     print("Fichier .env valide ✅")
+    # Si tout est bon, on remplace le .env actuel
+    # Open the file and write the content
+    with open(ENV_FILE_PATH, 'w', encoding="utf-8") as f:
+        f.writelines(lines)
     return jsonify({"message": "Fichier .env valide !"}), 200
 
 @app.route('/info-env', methods=['GET'])

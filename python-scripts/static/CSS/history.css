@@ -1,0 +1,67 @@
+html, body {
+    height: 100vh;
+    margin: 0;
+    background: #121212;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.container {
+    flex: 1;
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.logs-container {
+    background: #1e1e1e;
+    padding: 15px;
+    flex-grow: 1;
+    overflow-y: auto;
+    border-radius: 10px;
+    border: 1px solid #333;
+    height: 400px;
+}
+.log-item {
+    padding: 10px;
+    border-bottom: 1px solid #333;
+    font-size: 16px;
+}
+.actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+.btn {
+    background: #509AF8;
+    color: #ffffff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+.btn:hover {
+    background: #407AC8;
+}
+
+/* Scrollbar personnalisée en thème sombre */
+.logs-container::-webkit-scrollbar {
+    width: 8px; /* Épaisseur de la scrollbar */
+}
+.logs-container::-webkit-scrollbar-track {
+    background: #1e1e1e; /* Fond du track */
+    border-radius: 10px;
+}
+.logs-container::-webkit-scrollbar-thumb {
+    background: #444; /* Couleur du slider */
+    border-radius: 10px;
+    transition: background 0.3s ease;
+}
+.logs-container::-webkit-scrollbar-thumb:hover {
+    background: #666; /* Couleur au survol */
+}

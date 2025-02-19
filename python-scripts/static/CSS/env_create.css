@@ -1,0 +1,559 @@
+@keyframes slideout {
+    0% { transform: translateX(0); opacity: 1; }
+    100% { transform: translateX(150%); opacity: 0; }
+}
+
+@keyframes keyframes-fill {
+0% {
+    transform: scale(0);
+    opacity: 0;
+}
+
+50% {
+    transform: scale(1.2);
+}
+}
+
+/* Conteneur des bandeaux (fixé en haut) */
+.notifications-container {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 1000;
+}
+
+/* Styles généraux des bandeaux */
+.notification-banner {
+    width: 320px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    background: #509AF8;
+    border-radius: 8px;
+    box-shadow: 0px 0px 5px -3px #111;
+    opacity: 1;
+    transition: opacity 0.5s ease-out, transform 0.3s ease-in-out;
+}
+
+/* Animation de disparition */
+.notification-banner.slideout {
+    transform: translateX(150%);
+    opacity: 0;
+}
+
+/* Icône */
+.notification-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+}
+
+/* Titre */
+.notification-title {
+    font-weight: 500;
+    font-size: 14px;
+    color: #fff;
+}
+
+/* Bouton de fermeture */
+.notification-close {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    margin-left: auto;
+}
+
+
+
+/* Styles du bandeau d'information */
+.info {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    width: 320px;
+    padding: 12px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: start;
+    background: #509AF8;
+    border-radius: 8px;
+    box-shadow: 0px 0px 5px -3px #111;
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    z-index: 1000;
+    opacity: 1;
+    transition: opacity 0.5s ease-out;
+}
+.info.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+.info.slideout {
+    animation: slideout 0.8s forwards;
+}
+.info__icon {
+    width: 20px;
+    height: 20px;
+    transform: translateY(-2px);
+    margin-right: 8px;
+}
+.info__icon path {
+    fill: #fff;
+}
+.info__title {
+    font-weight: 500;
+    font-size: 14px;
+    color: #fff;
+}
+.info__close {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    margin-left: auto;
+}
+.info__close path {
+    fill: #fff;
+}
+
+/* Styles du bandeau de mise en garde (jaune) */
+.warning {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    width: 320px;
+    padding: 12px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: start;
+    background: #FFC107;
+    border-radius: 8px;
+    box-shadow: 0px 0px 5px -3px #111;
+    position: fixed;
+    top: 60px; /* Décalé sous l'info */
+    right: 15px;
+    z-index: 1000;
+    opacity: 1;
+    transition: opacity 0.5s ease-out;
+}
+.warning.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+.warning.slideout {
+    animation: slideout 0.8s forwards;
+}
+.warning__icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+}
+.warning__icon path {
+    fill: #fff;
+}
+.warning__title {
+    font-weight: 500;
+    font-size: 14px;
+    color: #fff;
+}
+.warning__close {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    margin-left: auto;
+}
+.warning__close path {
+    fill: #fff;
+}
+
+/* Styles du bandeau d'erreur (rouge) */
+.error {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    width: 320px;
+    padding: 12px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: start;
+    background: #F44336;
+    border-radius: 8px;
+    box-shadow: 0px 0px 5px -3px #111;
+    position: fixed;
+    top: 105px; /* Décalé sous la mise en garde */
+    right: 15px;
+    z-index: 1000;
+    opacity: 1;
+    transition: opacity 0.5s ease-out;
+}
+.error.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+.error.slideout {
+    animation: slideout 0.8s forwards;
+}
+.error__icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+}
+.error__icon path {
+    fill: #fff;
+}
+.error__title {
+    font-weight: 500;
+    font-size: 14px;
+    color: #fff;
+}
+.error__close {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    margin-left: auto;
+}
+.error__close path {
+    fill: #fff;
+}
+
+/* Styles du bandeau de validation (vert) */
+.success {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    width: 320px;
+    padding: 12px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: start;
+    background: #4CAF50; /* Vert */
+    border-radius: 8px;
+    box-shadow: 0px 0px 5px -3px #111;
+    position: fixed;
+    top: 150px; /* Décalé sous le bandeau d'erreur */
+    right: 15px;
+    z-index: 1000;
+    opacity: 1;
+    transition: opacity 0.5s ease-out;
+}
+.success.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+.success.slideout {
+    animation: slideout 0.8s forwards;
+}
+.success__icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+}
+.success__icon path {
+    fill: #fff;
+}
+.success__title {
+    font-weight: 500;
+    font-size: 14px;
+    color: #fff;
+}
+.success__close {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    margin-left: auto;
+}
+.success__close path {
+    fill: #fff;
+}
+
+html, body {
+    height: 100vh;
+    margin: 0;
+    background: #121212;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.container {
+    background: #161b22;
+    padding: 20px;
+    margin:auto;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    width: 400px;
+    text-align: center;
+    border: 1px solid #30363d;
+}
+
+h1 {
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin: 5px 0;
+    font-weight: bold;
+    text-align: left;
+}
+
+/* input {
+    background: #0d1117;
+    color: #c9d1d9;
+    border: 0px solid;
+} */
+
+button {
+    background: #238636;
+    color: white;
+    border: none;
+    padding: 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+button:hover {
+    background: #2ea043;
+}
+
+.button_title {
+    margin: 0;
+    font: inherit;
+    font-size: large;
+}
+
+.env-box {
+    border: 1px dashed #30363d;
+    padding: 15px;
+    margin-top: 20px;
+    background: #161b22;
+    cursor: pointer;
+}
+
+.env-box.drag-over {
+    background: rgba(255, 255, 255, 0.1); /* Effet de filtre blanc semi-transparent */
+    border: 1px dashed #ffffff; /* Bordure plus visible */
+    transition: all 0.3s ease-in-out;
+}
+
+.custum-file-upload .icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+}
+
+.custum-file-upload .icon svg {
+    height: 80px;
+    fill: #e8e8e8;
+}
+
+.upload_strong {
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.upload_small {
+    font-size: 14px;
+    color: #aab1b8;
+    margin-top: 5px;
+}
+
+.input-error {
+    border: 2px solid red !important;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+    animation: shake 0.3s;
+    animation-iteration-count: 1;
+}
+
+.input-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 10px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 4px;
+    padding: 5px;
+    position: relative;
+}
+
+.input-container input {
+    flex-grow: 1; /* Permet à l'input de prendre tout l'espace disponible */
+    background: transparent;
+    border: none;
+    padding: 10px;
+    color: #c9d1d9;
+    font-size: 14px;
+    outline: none;
+    width: 100%;
+}
+
+.input-container input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    filter: blur(3px);
+    transition: filter 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+.input-container input:focus::placeholder {
+    /* filter: blur(0px); */
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.eye-icon {
+    flex-shrink: 0; /* Empêche l'icône de se tasser */
+    margin-left: 5px; /* Ajoute un petit espace entre le bouton et l'œil */
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    stroke: white;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.eye-icon:hover {
+    opacity: 0.7;
+}
+
+.input-container button {
+    flex-shrink: 0; /* Empêche le bouton "Key" de se réduire */
+    margin-left: 5px; /* Ajoute un léger espace entre l'input et le bouton */
+}
+
+.button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 5px;
+    height: 30px;
+    width: 80px;
+    border: none;
+    background: #a549dacb;
+    border-radius: 20px;
+    cursor: pointer;
+    position: relative;
+}
+
+.lable {
+    line-height: 20px;
+    font-size: 17px;
+    color: #fff;
+    font-family: sans-serif;
+    letter-spacing: 1px;
+}
+
+.svg-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.button:hover {
+    background: #A649DA;
+}
+
+.button:hover .svg-icon {
+    animation: rot 0.5s linear infinite;
+}
+
+@keyframes rot {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(-6deg); }
+    50% { transform: rotate(0deg); }
+    75% { transform: rotate(6deg); }
+    100% { transform: rotate(0deg); }
+}
+
+/* Tooltip */
+.tooltip {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 5px;
+    display: none;
+    white-space: nowrap;
+    z-index: 10;
+}
+
+.tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
+}
+
+.error-message {
+    color: red;
+    font-size: 12px;
+    margin-top: 3px;
+    display: none;
+}
+
+.hidden-file-input {
+    display: none;
+}
+
+.success-effect {
+    border: 1px solid white !important;
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.8) !important;
+    transition: all 0.5s ease-in-out;
+}
+
+/*------ Settings ------*/
+.container-eye {
+--color: #a5a5b0;
+--size: 30px;
+display: flex;
+justify-content: center;
+align-items: center;
+position: relative;
+cursor: pointer;
+font-size: var(--size);
+user-select: none;
+fill: var(--color);
+}
+
+.container-eye .eye {
+position: relative;
+margin-left: 4px;
+animation: keyframes-fill .5s;
+}
+
+.container-eye .eye-slash {
+position: relative;
+animation: keyframes-fill .5s;
+display: none;
+}
+
+/* ------ On check event ------ */
+.container-eye input:checked ~ .eye {
+display: none;
+}
+
+.container-eye input:checked ~ .eye-slash {
+display: block;
+}
+
+/* ------ Hide the default checkbox ------ */
+.container-eye input {
+position: absolute;
+opacity: 0;
+cursor: pointer;
+height: 0;
+width: 0;
+}
